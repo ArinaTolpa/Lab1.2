@@ -1,6 +1,6 @@
 # Структурные модели
 
-```marmade
+```marmaid
 classDiagram
     class Game {
         - levelGenerator: LevelGenerator
