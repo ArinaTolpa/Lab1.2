@@ -7,55 +7,68 @@ import time
 # Класс для игрока (оранжевого персонажа)
 class Character(object):
     def __init__(self):
+        # Инициализация игрока с прямоугольной областью (Rect) для отслеживания его позиции
         self.rect = pygame.Rect(32, 32, 16, 16)
 
     def move(self, dx, dy):
+        # Функция для перемещения игрока
+        # dx и dy задают смещение по горизонтали и вертикали соответственно
         if dx != 0:
             self.move_single_axis(dx, 0)
         if dy != 0:
             self.move_single_axis(0, dy)
 
     def move_single_axis(self, dx, dy):
+        # Функция для перемещения игрока вдоль одной оси
         self.rect.x += dx
         self.rect.y += dy
 
+        # Проверка столкновения с каждой стеной
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                if dx > 0:
+                # Если есть столкновение, корректируем позицию игрока
+                if dx > 0:  # Движение вправо
                     self.rect.right = wall.rect.left
-                if dx < 0:
+                if dx < 0:  # Движение влево
                     self.rect.left = wall.rect.right
-                if dy > 0:
+                if dy > 0:  # Движение вниз
                     self.rect.bottom = wall.rect.top
-                if dy < 0:
+                if dy < 0:  # Движение вверх
                     self.rect.top = wall.rect.bottom
 
 # Класс для монеты
 class Coin(object):
     def __init__(self, pos, negative=False):
+        # Инициализация монеты с прямоугольной областью (Rect) для отслеживания ее позиции
         self.rect = pygame.Rect(pos[0], pos[1], 10, 10)
+        # negative указывает, является ли монета отрицательной (снижает счетчик)
         self.negative = negative
 
 # Класс для стены
 class Wall(object):
     def __init__(self, pos):
+        # Инициализация стены с прямоугольной областью (Rect) для отслеживания ее позиции
         walls.append(self)
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
 
 # Генерация лабиринта с использованием алгоритма DFS
 def LevelGenerator(width, height):
+    # Создание двумерного массива, заполненного единицами (стены)
     maze = [[1] * width for _ in range(height)]
     
     def carve_passages_from(cx, cy):
+        # Вспомогательная функция для вырезания путей в лабиринте
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         random.shuffle(directions)
         for direction in directions:
             nx, ny = cx + direction[0] * 2, cy + direction[1] * 2
             if 0 <= nx < width and 0 <= ny < height and maze[ny][nx] == 1:
+                # Прорезаем путь
                 maze[cy + direction[1]][cx + direction[0]] = 0
                 maze[ny][nx] = 0
                 carve_passages_from(nx, ny)
-                
+    
+    # Начинаем с верхнего левого угла лабиринта
     maze[1][1] = 0
     carve_passages_from(1, 1)
     return maze
@@ -66,9 +79,10 @@ pygame.init()
 
 # Настройка экрана
 screen_width, screen_height = 740, 580
-maze_offset_x, maze_offset_y = 0, 50  # Смещение лабиринта для создания пространства для счетчика
+# Смещение лабиринта для создания пространства для счетчика
+maze_offset_x, maze_offset_y = 0, 50
 pygame.display.set_caption("Достигните красного квадрата!")
-screen = pygame.display.set_mode((screen_width, screen_height))  # Увеличенный размер экрана
+screen = pygame.display.set_mode((screen_width, screen_height))
 
 clock = pygame.time.Clock()
 walls = []  # Список для хранения стен
@@ -91,14 +105,18 @@ negative_coin_count = 0
 for y in range(maze_height):
     for x in range(maze_width):
         if maze[y][x] == 1:
+            # Создание стены
             Wall((x * 16 + maze_offset_x, y * 16 + maze_offset_y))
         elif (x, y) == player_start:
+            # Установка начальной позиции игрока
             player.rect.topleft = (x * 16 + maze_offset_x, y * 16 + maze_offset_y)
         elif (x, y) == end_position:
+            # Установка конечной позиции
             end_rect = pygame.Rect(x * 16 + maze_offset_x, y * 16 + maze_offset_y, 16, 16)
         elif random.random() < 0.1:  # Случайное размещение монет
-            if negative_coin_count < positive_coin_count / 2:  # Обеспечение меньшего количества отрицательных монет
-                is_negative = random.random() < 0.33  # Регулировка вероятности для отрицательных монет
+            # Обеспечение меньшего количества отрицательных монет
+            if negative_coin_count < positive_coin_count / 2:
+                is_negative = random.random() < 0.33
             else:
                 is_negative = False
             
@@ -107,6 +125,7 @@ for y in range(maze_height):
             else:
                 positive_coin_count += 1
             
+            # Создание монеты
             coins.append(Coin((x * 16 + maze_offset_x, y * 16 + maze_offset_y), negative=is_negative))
 
 # Создание границ справа и снизу
@@ -115,7 +134,6 @@ for x in range(maze_width):
 for y in range(maze_height):
     Wall((maze_width * 16 + maze_offset_x, y * 16 + maze_offset_y))
 
-
 # Инициализация счетчика монет и таймера
 coin_count = 0
 font = pygame.font.SysFont(None, 36)
@@ -123,6 +141,7 @@ start_time = time.time()
 max_time = 120  # Максимальное время в секундах
 
 def GameStats(elapsed_time):
+    # Отображение статистики игры
     screen.fill((0, 0, 0))
     stats_text = font.render(f"Всего собрано монет: {coin_count}", True, (255, 255, 255))
     time_text = font.render(f"Время: {elapsed_time:.2f} секунд", True, (255, 255, 255))
@@ -132,6 +151,7 @@ def GameStats(elapsed_time):
     pygame.time.wait(3000)  # Отображение статистики в течение 3 секунд
 
 def ConfirmExit():
+    # Подтверждение выхода из игры
     screen.fill((0, 0, 0))
     confirm_text = font.render("Вы уверены, что хотите выйти? (Y/N)", True, (255, 255, 255))
     screen.blit(confirm_text, (screen_width // 2 - confirm_text.get_width() // 2, screen_height // 2 - confirm_text.get_height() // 2))
@@ -150,6 +170,7 @@ def ConfirmExit():
                     return
 
 def ShowStartScreen():
+    # Отображение начального экрана
     screen.fill((0, 0, 0))
     start_text = font.render("Нажмите Enter для начала игры", True, (255, 255, 255))
     screen.blit(start_text, (screen_width // 2 - start_text.get_width() // 2, screen_height // 2 - start_text.get_height() // 2))
