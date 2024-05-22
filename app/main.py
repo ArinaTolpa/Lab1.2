@@ -140,13 +140,13 @@ font = pygame.font.SysFont(None, 36)
 start_time = time.time()
 max_time = 120  # Максимальное время в секундах
 
-def GameStats(elapsed_time):
+def GameStats(message):
     # Отображение статистики игры
     screen.fill((0, 0, 0))
     stats_text = font.render(f"Всего собрано монет: {coin_count}", True, (255, 255, 255))
-    time_text = font.render(f"Время: {elapsed_time:.2f} секунд", True, (255, 255, 255))
+    message_text = font.render(message, True, (255, 255, 255))
     screen.blit(stats_text, (screen_width // 2 - stats_text.get_width() // 2, screen_height // 2 - stats_text.get_height() // 2 - 20))
-    screen.blit(time_text, (screen_width // 2 - time_text.get_width() // 2, screen_height // 2 - time_text.get_height() // 2 + 20))
+    screen.blit(message_text, (screen_width // 2 - message_text.get_width() // 2, screen_height // 2 - message_text.get_height() // 2 + 20))
     pygame.display.flip()
     pygame.time.wait(3000)  # Отображение статистики в течение 3 секунд
 
@@ -221,17 +221,24 @@ while running:
             else:
                 coin_count += 1  # Увеличение счетчика монет, если это положительная монета
 
+    # Проверка, собрал ли игрок 20 монет
+    if coin_count >= 20:
+        elapsed_time = time.time() - start_time
+        GameStats(f"Вы победили! Время: {elapsed_time:.2f} секунд")
+        pygame.quit()
+        sys.exit()
+
     # Проверка, достигает ли игрок конца
     if player.rect.colliderect(end_rect):
         elapsed_time = time.time() - start_time
-        GameStats(elapsed_time)
+        GameStats(f"Время: {elapsed_time:.2f} секунд")
         pygame.quit()
         sys.exit()
 
     # Проверка, истекло ли время
     elapsed_time = time.time() - start_time
     if elapsed_time > max_time:
-        GameStats(elapsed_time)
+        GameStats(f"Время истекло")
         pygame.quit()
         sys.exit()
 
