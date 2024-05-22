@@ -1,5 +1,7 @@
 # Структурные модели
 
+## Cделать описание внутренней структуры приложения
+
 ```mermaid
 classDiagram
     direction LR
@@ -70,54 +72,54 @@ classDiagram
 
 
 ### Character
-    `rect`: прямоугольная область для отслеживания позиции игрока.
-    `init()`: инициализация игрока.
-    `move(dx, dy)`: перемещение игрока.
-    `move_single_axis(dx, dy)`: перемещение игрока вдоль одной оси и проверка столкновений.
+- `rect`: прямоугольная область для отслеживания позиции игрока.
+- `init()`: инициализация игрока.
+- `move(dx, dy)`: перемещение игрока.
+- `move_single_axis(dx, dy)`: перемещение игрока вдоль одной оси и проверка столкновений.
 
 ### Coin
-    `rect`: прямоугольная область для отслеживания позиции монеты.
-    `negative`: указывает, является ли монета отрицательной.
-    `init(pos, negative=False)`: инициализация монеты.
+- `rect`: прямоугольная область для отслеживания позиции монеты.
+- `negative`: указывает, является ли монета отрицательной.
+- `init(pos, negative=False)`: инициализация монеты.
     
 ### Wall
-    `rect`: прямоугольная область для отслеживания позиции стены.
-    `init(pos)`: инициализация стены.
+- `rect`: прямоугольная область для отслеживания позиции стены.
+- `init(pos)`: инициализация стены.
 
 ### LevelGenerator
-    `LevelGenerator(width, height)`: генерация лабиринта.
-    `carve_passages_from(cx, cy)`: вспомогательная функция для вырезания путей в лабиринте.
+- `LevelGenerator(width, height)`: генерация лабиринта.
+- `carve_passages_from(cx, cy)`: вспомогательная функция для вырезания путей в лабиринте.
 
 ### GameStats
-    `GameStats(message)`: отображение статистики игры.
+- `GameStats(message)`: отображение статистики игры.
 
 ### ConfirmExit
-    `ConfirmExit()`: подтверждение выхода из игры.
+- `ConfirmExit()`: подтверждение выхода из игры.
 
 ### ShowStartScreen
-    `ShowStartScreen()`: отображение начального экрана.
+- `ShowStartScreen()`: отображение начального экрана.
 
 ### Main
-    `screen_width`: ширина экрана.
-    `screen_height`: высота экрана.
-    `maze_offset_x`: смещение лабиринта по оси X.
-    `maze_offset_y`: смещение лабиринта по оси Y.
-    `walls`: список стен.
-    `coins`: список монет.
-    `coin_count`: счетчик монет.
-    `start_time`: время начала игры.
-    `max_time`: максимальное время игры.
-    `player`: объект игрока.
-    `maze`: двумерный список, представляющий лабиринт.
-    `player_start`: начальная позиция игрока.
-    `end_position`: конечная позиция лабиринта.
-    `end_rect`: прямоугольная область для конечной позиции.
-    `init_pygame()`: инициализация pygame.
-    `generate_maze()`: генерация лабиринта.
-    `run_game()`: запуск основного цикла игры.
+- `screen_width`: ширина экрана.
+- `screen_height`: высота экрана.
+- `maze_offset_x`: смещение лабиринта по оси X.
+- `maze_offset_y`: смещение лабиринта по оси Y.
+- `walls`: список стен.
+- `coins`: список монет.
+- `coin_count`: счетчик монет.
+- `start_time`: время начала игры.
+- `max_time`: максимальное время игры.
+- `player`: объект игрока.
+- `maze`: двумерный список, представляющий лабиринт.
+- `player_start`: начальная позиция игрока.
+- `end_position`: конечная позиция лабиринта.
+- `end_rect`: прямоугольная область для конечной позиции.
+- `init_pygame()`: инициализация pygame.
+- `generate_maze()`: генерация лабиринта.
+- `run_game()`: запуск основного цикла игры.
 
 
-### Диаграмма объектов
+## Диаграмма объектов
 ![Диаграмма структурных моделей](https://www.planttext.com/api/plantuml/png/RL9BRaCX3Dnp2k-R9wKvG1IfYsowgDHSW82JKF6fm2-AL7LLzO2vKGqXGAkoG69iZyTZDebafDbP8SB-3HN1LZg43m5y7i1uGqPQK254RRmah84ZUepyr63nZBQYP1n6U5mj8Q4ANYVnsNYVSzxsLXPYwr3AxtIC3nLF9ncb8kp9gY7l8R6ouE7wlO3hLurh4xamm-40BfpHeQU1SLVq3Mp-Y8c7R79lWTq9mScBSRCh8y7qQwQ1C9lrIf9I8_MpstCFxg-2yOblQpaJTOtVUMlU1AjbZWoSBrn7NMHpFcLIOcbgZf7dQXxyaoaFsQJH0L7sEathFuleUBExGyMl_cpJYhwQZ1V5t6A3NlDN-W40)
 
 ### Описание 
