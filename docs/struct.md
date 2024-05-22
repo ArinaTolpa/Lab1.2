@@ -2,118 +2,119 @@
 
 ```mermaid
 classDiagram
-    class Game {
-        - levelGenerator: LevelGenerator
-        - character: Character
-        - timer: Timer
-        - gameStats: GameStats
-        + initializeGame()
-        + startGame()
-        + update()
-        + endGame()
-    }
-    class LevelGenerator {
-        + generateLevel()
-        + placeCoins()
-    }
+    direction LR
+    
     class Character {
-        - position: Point
-        - collectedGoodCoins: int
-        - collectedBadCoins: int
-        + move(direction: Direction)
-        + collectCoin(coin: Coin)
+        +Rect rect
+        +__init__()
+        +move(dx, dy)
+        +move_single_axis(dx, dy)
     }
-    class Timer {
-        - startTime: int
-        - timeLimit: int
-        + startTimer()
-        + stopTimer()
-        + checkTimeLimit()
-    }
-    class GameStats {
-        - goodCoinsCollected: int
-        - badCoinsCollected: int
-        + updateCoinCount(coinType: CoinType)
-        + displayStats()
-    }
-    class Point {
-        - x: int
-        - y: int
-    }
-    class Direction {
-        - direction: int
-    }
+    
     class Coin {
-        - type: CoinType
+        +Rect rect
+        +bool negative
+        +__init__(pos, negative=False)
     }
-    class CoinType {
-        - value: int
+    
+    class Wall {
+        +Rect rect
+        +__init__(pos)
+    }
+    
+    class LevelGenerator {
+        +LevelGenerator(width, height)
+        +carve_passages_from(cx, cy)
+    }
+    
+    class GameStats {
+        +GameStats(message)
+    }
+    
+    class ConfirmExit {
+        +ConfirmExit()
+    }
+    
+    class ShowStartScreen {
+        +ShowStartScreen()
+    }
+    
+    class Main {
+        -screen_width: int
+        -screen_height: int
+        -maze_offset_x: int
+        -maze_offset_y: int
+        -walls: List~Wall~
+        -coins: List~Coin~
+        -coin_count: int
+        -start_time: float
+        -max_time: int
+        -player: Character
+        -maze: List~List~int~~
+        -player_start: Tuple~int, int~
+        -end_position: Tuple~int, int~
+        -end_rect: Rect
+        +init_pygame()
+        +generate_maze()
+        +run_game()
     }
 
-    Game --> LevelGenerator
-    Game --> Character
-    Game --> Timer
-    Game --> GameStats
-    Character --> Point
-    Character --> Coin
-    Character --> Direction
- 
-    Timer --> Point
-    GameStats --> CoinType
+    Main --> Character 
+    Main --> Coin 
+    Main --> Wall 
+    Main --> LevelGenerator 
+    Main --> GameStats 
+    Main --> ConfirmExit 
+    Main --> ShowStartScreen 
 ```
 
 
-### Game (Игра):
-- **levelGenerator**: Используется для генерации уровня и размещения монет.
-- **character**: Представляет игрового персонажа, управляет его движениями и сбором монет.
-- **timer**: Отслеживает время игры и обработку ограничения времени.
-- **gameStats**: Хранит статистику игры, такую как количество собранных монет.
-- Методы:
-  - `initializeGame()`: Инициализирует игру перед началом.
-  - `startGame()`: Запускает игру.
-  - `update()`: Обновляет состояние игры на каждом кадре.
-  - `endGame()`: Завершает игру.
+### Character
+    `rect`: прямоугольная область для отслеживания позиции игрока.
+    `init()`: инициализация игрока.
+    `move(dx, dy)`: перемещение игрока.
+    `move_single_axis(dx, dy)`: перемещение игрока вдоль одной оси и проверка столкновений.
 
-### LevelGenerator (Генератор уровней):
-- Методы:
-  - `generateLevel()`: Размещает монеты и создает новый игровой уровень.
-  - `placeCoins()`: Размещает монеты на уровне.
+### Coin
+    `rect`: прямоугольная область для отслеживания позиции монеты.
+    `negative`: указывает, является ли монета отрицательной.
+    `init(pos, negative=False)`: инициализация монеты.
+    
+### Wall
+    `rect`: прямоугольная область для отслеживания позиции стены.
+    `init(pos)`: инициализация стены.
 
-### Character (Персонаж):
-- **position**: Хранит текущую позицию персонажа.
-- **collectedGoodCoins**: Хранит количество собранных хороших монет.
-- **collectedBadCoins**: Хранит количество собранных плохих монет.
-- Методы:
-  - `move(direction: Direction)`: Перемещает персонажа в указанном направлении.
-  - `collectCoin(coin: Coin)`: Обрабатывает сбор монеты.
+### LevelGenerator
+    `LevelGenerator(width, height)`: генерация лабиринта.
+    `carve_passages_from(cx, cy)`: вспомогательная функция для вырезания путей в лабиринте.
 
-### Timer (Таймер):
-- **startTime**: Хранит время запуска таймера.
-- **timeLimit**: Хранит ограничение времени игры.
-- Методы:
-  - `startTimer()`: Запускает таймер.
-  - `stopTimer()`: Останавливает таймер.
-  - `checkTimeLimit()`: Проверяет, истекло ли ограничение времени.
+### GameStats
+    `GameStats(message)`: отображение статистики игры.
 
-### GameStats (Статистика игры):
-- **goodCoinsCollected**: Хранит количество собранных хороших монет.
-- **badCoinsCollected**: Хранит количество собранных плохих монет.
-- Методы:
-  - `updateCoinCount(coinType: CoinType)`: Обновляет количество собранных монет.
-  - `displayStats()`: Отображает статистику игры.
+### ConfirmExit
+    `ConfirmExit()`: подтверждение выхода из игры.
 
-### Point (Точка):
-- x: Координата по оси X.
-- y: Координата по оси Y.
+### ShowStartScreen
+    `ShowStartScreen()`: отображение начального экрана.
 
-### Direction (Направление):
-- `direction`: Направление движения персонажа.
-
-### Coin (Монета):
-- `type`: Тип монеты.
-
-### CoinType (Тип монеты):
-- `value`: Значение типа монеты.
+### Main
+    `screen_width`: ширина экрана.
+    `screen_height`: высота экрана.
+    `maze_offset_x`: смещение лабиринта по оси X.
+    `maze_offset_y`: смещение лабиринта по оси Y.
+    `walls`: список стен.
+    `coins`: список монет.
+    `coin_count`: счетчик монет.
+    `start_time`: время начала игры.
+    `max_time`: максимальное время игры.
+    `player`: объект игрока.
+    `maze`: двумерный список, представляющий лабиринт.
+    `player_start`: начальная позиция игрока.
+    `end_position`: конечная позиция лабиринта.
+    `end_rect`: прямоугольная область для конечной позиции.
+    `init_pygame()`: инициализация pygame.
+    `generate_maze()`: генерация лабиринта.
+    `run_game()`: запуск основного цикла игры.
 
 
 ### Диаграмма объектов
