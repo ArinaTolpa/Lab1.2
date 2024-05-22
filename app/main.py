@@ -131,7 +131,44 @@ def GameStats(elapsed_time):
     pygame.display.flip()
     pygame.time.wait(3000)  # Отображение статистики в течение 3 секунд
 
+def ConfirmExit():
+    screen.fill((0, 0, 0))
+    confirm_text = font.render("Вы уверены, что хотите выйти? (Y/N)", True, (255, 255, 255))
+    screen.blit(confirm_text, (screen_width // 2 - confirm_text.get_width() // 2, screen_height // 2 - confirm_text.get_height() // 2))
+    pygame.display.flip()
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_y:
+                    pygame.quit()
+                    sys.exit()
+                if e.key == pygame.K_n:
+                    return
+
+def ShowStartScreen():
+    screen.fill((0, 0, 0))
+    start_text = font.render("Нажмите Enter для начала игры", True, (255, 255, 255))
+    screen.blit(start_text, (screen_width // 2 - start_text.get_width() // 2, screen_height // 2 - start_text.get_height() // 2))
+    pygame.display.flip()
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                return
+
+# Показ начального экрана
+ShowStartScreen()
+
+# Начало игры
 running = True
+start_time = time.time()
 while running:
 
     clock.tick(60)
@@ -140,7 +177,7 @@ while running:
         if e.type == pygame.QUIT:
             running = False
         if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-            running = False
+            ConfirmExit()
 
     # Перемещение игрока при нажатии клавиши со стрелкой
     key = pygame.key.get_pressed()
@@ -195,6 +232,5 @@ while running:
     screen.blit(timer_text, (screen_width - timer_text.get_width() - 10, 10))
 
     pygame.display.flip()
-    clock.tick(360)
 
 pygame.quit()
