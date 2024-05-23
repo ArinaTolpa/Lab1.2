@@ -1,6 +1,6 @@
 import pytest
 import pygame
-from main import Character, Wall
+from main import Character, Wall, Coin
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -77,6 +77,36 @@ def test_collision_bottom(setup_character):
     character.rect.topleft = (100, 110)  # Устанавливаем персонажа рядом со стеной
     character.move(0, -20, walls)
     assert character.rect.top == walls[0].rect.bottom
+
+# Фикстура для создания монет
+@pytest.fixture
+def setup_coin():
+    pos = (50, 50)
+    positive_coin = Coin(pos)
+    negative_coin = Coin(pos, negative=True)
+    return positive_coin, negative_coin
+
+# Тест для проверки начальной позиции монеты
+def test_coin_position(setup_coin):
+    positive_coin, _ = setup_coin
+    assert positive_coin.rect.x == 50
+    assert positive_coin.rect.y == 50
+
+# Тест для проверки начальной позиции отрицательной монеты
+def test_negative_coin_position(setup_coin):
+    _, negative_coin = setup_coin
+    assert negative_coin.rect.x == 50
+    assert negative_coin.rect.y == 50
+
+# Тест для проверки, что монета не отрицательная по умолчанию
+def test_positive_coin_default(setup_coin):
+    positive_coin, _ = setup_coin
+    assert not positive_coin.negative
+
+# Тест для проверки, что монета может быть отрицательной
+def test_negative_coin_flag(setup_coin):
+    _, negative_coin = setup_coin
+    assert negative_coin.negative
 
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)
