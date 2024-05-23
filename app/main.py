@@ -7,70 +7,94 @@ import time
 # Класс для игрока (оранжевого персонажа)
 class Character(object):
     def __init__(self):
-        # Инициализация игрока с прямоугольной областью (Rect) для отслеживания его позиции
         self.rect = pygame.Rect(32, 32, 16, 16)
 
     def move(self, dx, dy, walls):
-        # Функция для перемещения игрока
-        # dx и dy задают смещение по горизонтали и вертикали соответственно
         if dx != 0:
             self.move_single_axis(dx, 0, walls)
         if dy != 0:
             self.move_single_axis(0, dy, walls)
 
     def move_single_axis(self, dx, dy, walls):
-        # Функция для перемещения игрока вдоль одной оси
         self.rect.x += dx
         self.rect.y += dy
-
-        # Проверка столкновения с каждой стеной
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                # Если есть столкновение, корректируем позицию игрока
-                if dx > 0:  # Движение вправо
+                if dx > 0:
                     self.rect.right = wall.rect.left
-                if dx < 0:  # Движение влево
+                if dx < 0:
                     self.rect.left = wall.rect.right
-                if dy > 0:  # Движение вниз
+                if dy > 0:
                     self.rect.bottom = wall.rect.top
-                if dy < 0:  # Движение вверх
+                if dy < 0:
                     self.rect.top = wall.rect.bottom
 
-# Класс для монеты
 class Coin(object):
     def __init__(self, pos, negative=False):
-        # Инициализация монеты с прямоугольной областью (Rect) для отслеживания ее позиции
         self.rect = pygame.Rect(pos[0], pos[1], 10, 10)
-        # negative указывает, является ли монета отрицательной (снижает счетчик)
         self.negative = negative
 
-# Класс для стены
 class Wall(object):
     def __init__(self, pos):
-        # Инициализация стены с прямоугольной областью (Rect) для отслеживания ее позиции
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
 
-# Генерация лабиринта с использованием алгоритма DFS
 def LevelGenerator(width, height):
-    # Создание двумерного массива, заполненного единицами (стены)
     maze = [[1] * width for _ in range(height)]
     
     def carve_passages_from(cx, cy):
-        # Вспомогательная функция для вырезания путей в лабиринте
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         random.shuffle(directions)
         for direction in directions:
             nx, ny = cx + direction[0] * 2, cy + direction[1] * 2
             if 0 <= nx < width and 0 <= ny < height and maze[ny][nx] == 1:
-                # Прорезаем путь
                 maze[cy + direction[1]][cx + direction[0]] = 0
                 maze[ny][nx] = 0
                 carve_passages_from(nx, ny)
     
-    # Начинаем с верхнего левого угла лабиринта
     maze[1][1] = 0
     carve_passages_from(1, 1)
     return maze
+
+def GameStats(screen, font, message, coin_count, screen_width, screen_height):
+    screen.fill((0, 0, 0))
+    stats_text = font.render(f"Всего собрано монет: {coin_count}", True, (255, 255, 255))
+    message_text = font.render(message, True, (255, 255, 255))
+    screen.blit(stats_text, (screen_width // 2 - stats_text.get_width() // 2, screen_height // 2 - stats_text.get_height() // 2 - 20))
+    screen.blit(message_text, (screen_width // 2 - message_text.get_width() // 2, screen_height // 2 - message_text.get_height() // 2 + 20))
+    pygame.display.flip()
+    pygame.time.wait(3000)
+
+def ConfirmExit(screen, font, screen_width, screen_height):
+    screen.fill((0, 0, 0))
+    confirm_text = font.render("Вы уверены, что хотите выйти? (Y/N)", True, (255, 255, 255))
+    screen.blit(confirm_text, (screen_width // 2 - confirm_text.get_width() // 2, screen_height // 2 - confirm_text.get_height() // 2))
+    pygame.display.flip()
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_y:
+                    pygame.quit()
+                    sys.exit()
+                if e.key == pygame.K_n:
+                    return
+
+def ShowStartScreen(screen, font, screen_width, screen_height):
+    screen.fill((0, 0, 0))
+    start_text = font.render("Нажмите Enter для начала игры", True, (255, 255, 255))
+    screen.blit(start_text, (screen_width // 2 - start_text.get_width() // 2, screen_height // 2 - start_text.get_height() // 2))
+    pygame.display.flip()
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                return
 
 if __name__ == "__main__":
     # Инициализация pygame
