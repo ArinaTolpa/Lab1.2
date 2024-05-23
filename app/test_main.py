@@ -1,7 +1,7 @@
 import pytest
 import pygame
+from unittest.mock import patch, MagicMock
 from main import Character, Wall, Coin, GameStats
-import numpy as np
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -110,49 +110,47 @@ def test_negative_coin_flag(setup_coin):
     assert negative_coin.negative
 
 @pytest.fixture
-def setup_screen():
-    pygame.init()
-    screen_width, screen_height = 740, 580
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    font = pygame.font.SysFont(None, 36)
-    return screen, font, screen_width, screen_height
+def setup_pygame():
+    screen = MagicMock()
+    font = MagicMock()
+    return screen, font
 
-# Тест для проверки отображения статистики игры
-def test_gamestats_display(setup_screen):
-    screen, font, screen_width, screen_height = setup_screen
+@patch('pygame.display.flip')
+@patch('pygame.time.wait')
+def test_GameStats(mock_wait, mock_flip, setup_pygame):
+    screen, font = setup_pygame
     message = "Тестовое сообщение"
     coin_count = 5
+    screen_width = 740
+    screen_height = 580
 
-    # Вызов функции для отображения статистики
+    # Мок объектов pygame для тестирования
+    stats_text = MagicMock()
+    message_text = MagicMock()
+    
+    # Настройка mock для методов render и get_width
+    font.render.side_effect = [stats_text, message_text]
+    stats_text.get_width.return_value = 200
+    stats_text.get_height.return_value = 50
+    message_text.get_width.return_value = 200
+    message_text.get_height.return_value = 50
+
     GameStats(screen, font, message, coin_count, screen_width, screen_height)
 
-    # Сохранение содержимого экрана в изображение
-    pygame.image.save(screen, "screenshot.png")
+    # Проверка, что render был вызван дважды
+    assert font.render.call_count == 2
 
-    # Проверка, что изображение не пустое
-    image = pygame.image.load("screenshot.png")
-    image_array = pygame.surfarray.array3d(image)
-    
-    # Проверка, что экран не пуст (на нем что-то отрисовано)
-    assert np.any(image_array != 0), "Screen is empty"
+    # Проверка аргументов для render
+    font.render.assert_any_call(f"Всего собрано монет: {coin_count}", True, (255, 255, 255))
+    font.render.assert_any_call(message, True, (255, 255, 255))
 
-    # Проверка, что сообщение отобразилось правильно
-    text_surface = font.render(message, True, (255, 255, 255))
-    text_x = screen_width // 2 - text_surface.get_width() // 2
-    text_y = screen_height // 2 - text_surface.get_height() // 2 + 20
+    # Проверка, что flip и wait были вызваны
+    mock_flip.assert_called_once()
+    mock_wait.assert_called_once_with(3000)
 
-    text_rendered_correctly = True
-    for y in range(text_surface.get_height()):
-        for x in range(text_surface.get_width()):
-            if text_surface.get_at((x, y))[:3] != (0, 0, 0):  # Проверка только RGB значений
-                if screen.get_at((text_x + x, text_y + y))[:3] != (255, 255, 255):
-                    text_rendered_correctly = False
-                    break
-        if not text_rendered_correctly:
-            break
-
-    assert text_rendered_correctly, "Text is not rendered correctly on the screen"
-
+    # Проверка вызовов blit
+    screen.blit.assert_any_call(stats_text, (screen_width // 2 - 200 // 2, screen_height // 2 - 50 // 2 - 20))
+    screen.blit.assert_any_call(message_text, (screen_width // 2 - 200 // 2, screen_height // 2 - 50 // 2 + 20))
 
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)
