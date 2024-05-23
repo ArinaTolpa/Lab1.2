@@ -1,7 +1,10 @@
 import pytest
 import pygame
 from unittest.mock import patch, MagicMock
-from main import Character, Wall, Coin, GameStats
+from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
+import sys
+from pygame.locals import QUIT, KEYDOWN, K_y, K_n
+
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -151,6 +154,66 @@ def test_GameStats(mock_wait, mock_flip, setup_pygame):
     # Проверка вызовов blit
     screen.blit.assert_any_call(stats_text, (screen_width // 2 - 200 // 2, screen_height // 2 - 50 // 2 - 20))
     screen.blit.assert_any_call(message_text, (screen_width // 2 - 200 // 2, screen_height // 2 - 50 // 2 + 20))
+
+######
+def test_ConfirmExit_no_quit(monkeypatch):
+    pygame.init()
+    screen_width, screen_height = 800, 600
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    font = pygame.font.SysFont(None, 36)
+
+    # Мокирование событий для нажатия клавиши 'N'
+    def mock_get():
+        return [
+            pygame.event.Event(KEYDOWN, {'key': K_n}),
+        ]
+
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    quit_called = []
+
+    def mock_quit():
+        quit_called.append(True)
+        raise SystemExit
+
+    monkeypatch.setattr(pygame, 'quit', mock_quit)
+
+    try:
+        ConfirmExit(screen, font, screen_width, screen_height)
+    except SystemExit:
+        pytest.fail("Неожиданный SystemExit при ConfirmExit с клавишей 'N'")
+
+    assert not quit_called, "pygame.quit() был вызван при нажатии клавиши 'N'"
+
+    # Восстановление оригинальной функции pygame.quit для предотвращения SystemExit
+    monkeypatch.undo()
+    pygame.quit()
+
+def test_ConfirmExit_yes_quit(monkeypatch):
+    pygame.init()
+    screen_width, screen_height = 800, 600
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    font = pygame.font.SysFont(None, 36)
+
+    # Мокирование событий для нажатия клавиши 'Y'
+    def mock_get_exit():
+        return [
+            pygame.event.Event(KEYDOWN, {'key': K_y}),
+        ]
+
+    monkeypatch.setattr(pygame.event, 'get', mock_get_exit)
+
+    def mock_quit():
+        raise SystemExit
+
+    monkeypatch.setattr(pygame, 'quit', mock_quit)
+
+    with pytest.raises(SystemExit):
+        ConfirmExit(screen, font, screen_width, screen_height)
+
+    # Восстановление оригинальной функции pygame.quit для предотвращения SystemExit
+    monkeypatch.undo()
+######
 
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)

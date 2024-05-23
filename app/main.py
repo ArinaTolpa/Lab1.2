@@ -81,7 +81,7 @@ def ConfirmExit(screen, font, screen_width, screen_height):
                     sys.exit()
                 if e.key == pygame.K_n:
                     return
-
+                
 def ShowStartScreen(screen, font, screen_width, screen_height):
     screen.fill((0, 0, 0))
     start_text = font.render("Нажмите Enter для начала игры", True, (255, 255, 255))
