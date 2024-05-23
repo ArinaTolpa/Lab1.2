@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
 import sys
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN, K_ESCAPE, K_LEFT, K_RIGHT, K_UP, K_DOWN
+import random
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -344,6 +345,45 @@ def test_game_cycle(monkeypatch, setup_pygame):
     assert not running
 ######################
 
+#!!!!!!!!!!
+# Допустим, что функция LevelGenerator уже определена
+def LevelGenerator(width, height):
+    maze = [[1] * width for _ in range(height)]
+    
+    def carve_passages_from(cx, cy):
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        random.shuffle(directions)
+        for direction in directions:
+            nx, ny = cx + direction[0] * 2, cy + direction[1] * 2
+            if 0 <= nx < width and 0 <= ny < height and maze[ny][nx] == 1:
+                maze[cy + direction[1]][cx + direction[0]] = 0
+                maze[ny][nx] = 0
+                carve_passages_from(nx, ny)
+    
+    maze[1][1] = 0
+    carve_passages_from(1, 1)
+    return maze
+
+def test_start_end_positions():
+    # Параметры лабиринта
+    maze_width, maze_height = 40, 30
+    
+    # Генерация случайного лабиринта
+    maze = LevelGenerator(maze_width, maze_height)
+
+    # Установка начальной и конечной позиции
+    player_start = (1, 1)
+    end_position = (maze_width - 2, maze_height - 2)
+    maze[1][1] = 0
+    maze[maze_height - 2][maze_width - 2] = 0
+
+    # Проверка, что начальная позиция проходима
+    assert maze[player_start[1]][player_start[0]] == 0, "Начальная позиция должна быть проходимой (0)"
+
+    # Проверка, что конечная позиция проходима
+    assert maze[end_position[1]][end_position[0]] == 0, "Конечная позиция должна быть проходимой (0)"
+
+#!!!!!!!!!!
 
 
 # Закрытие Pygame после тестов
