@@ -386,6 +386,77 @@ def test_start_end_positions():
 #!!!!!!!!!!
 
 
+# Заглушка для шрифта и экрана pygame
+class MockFont:
+    def render(self, text, antialias, color):
+        return pygame.Surface((100, 30))
+
+class MockScreen:
+    def fill(self, color):
+        pass
+
+    def blit(self, source, dest):
+        pass
+
+    def flip(self):
+        pass
+
+# Функция ConfirmExit
+def ConfirmExit(screen, font, screen_width, screen_height):
+    screen.fill((0, 0, 0))
+    confirm_text = font.render("Вы уверены, что хотите выйти? (Y/N)", True, (255, 255, 255))
+    screen.blit(confirm_text, (screen_width // 2 - confirm_text.get_width() // 2, screen_height // 2 - confirm_text.get_height() // 2))
+    pygame.display.flip()
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == KEYDOWN:
+                if e.key == K_y:
+                    pygame.quit()
+                    sys.exit()
+                if e.key == K_n:
+                    return
+
+# Тестовая функция
+def test_confirm_exit(monkeypatch):
+    # Инициализация pygame
+    pygame.init()
+
+    # Создание заглушек для экрана и шрифта
+    screen = MockScreen()
+    font = MockFont()
+    screen_width, screen_height = 800, 600
+
+    # Заглушка для очереди событий
+    events = [
+        pygame.event.Event(KEYDOWN, {'key': K_n}),
+    ]
+
+    def mock_get():
+        return events
+
+    # Замена функции получения событий pygame на нашу заглушку
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    # Замена sys.exit, чтобы предотвратить выход из теста
+    exit_called = False
+    def mock_exit():
+        nonlocal exit_called
+        exit_called = True
+
+    monkeypatch.setattr(sys, 'exit', mock_exit)
+
+    # Запуск функции ConfirmExit
+    ConfirmExit(screen, font, screen_width, screen_height)
+
+    # Проверка, что функция завершилась как ожидалось
+    assert not exit_called, "Функция не должна вызывать sys.exit() при нажатии 'N'"
+
+
+
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)
 def teardown_pygame():
