@@ -3,8 +3,7 @@ import pygame
 from unittest.mock import patch, MagicMock
 from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
 import sys
-from pygame.locals import QUIT, KEYDOWN, K_y, K_n
-
+from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN, K_ESCAPE, K_LEFT, K_RIGHT, K_UP, K_DOWN
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -213,7 +212,139 @@ def test_ConfirmExit_yes_quit(monkeypatch):
 
     # Восстановление оригинальной функции pygame.quit для предотвращения SystemExit
     monkeypatch.undo()
-######
+
+######################
+
+@pytest.fixture
+def setup_pygame():
+    pygame.init()
+    screen_width, screen_height = 800, 600
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    font = pygame.font.SysFont(None, 36)
+    return screen, font, screen_width, screen_height
+
+@patch('pygame.display.flip')
+@patch('pygame.time.wait')
+def test_GameStats(mock_wait, mock_flip, setup_pygame):
+    screen, font, screen_width, screen_height = setup_pygame
+    coin_count = 10
+    message = "Test message"
+    GameStats(screen, font, message, coin_count, screen_width, screen_height)
+    assert mock_flip.called
+    assert mock_wait.called
+
+def test_ShowStartScreen(monkeypatch, setup_pygame):
+    screen, font, screen_width, screen_height = setup_pygame
+
+    def mock_get():
+        return [pygame.event.Event(KEYDOWN, {'key': K_RETURN})]
+
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    ShowStartScreen(screen, font, screen_width, screen_height)
+    assert pygame.display.get_surface() is not None
+
+def test_ConfirmExit_no(monkeypatch, setup_pygame):
+    screen, font, screen_width, screen_height = setup_pygame
+
+    def mock_get():
+        return [pygame.event.Event(KEYDOWN, {'key': K_n})]
+
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    quit_called = []
+
+    def mock_quit():
+        quit_called.append(True)
+        raise SystemExit
+
+    monkeypatch.setattr(pygame, 'quit', mock_quit)
+
+    try:
+        ConfirmExit(screen, font, screen_width, screen_height)
+    except SystemExit:
+        pytest.fail("Unexpected SystemExit when pressing 'N'")
+
+    assert not quit_called, "pygame.quit() was called when pressing 'N'"
+
+def test_ConfirmExit_yes(monkeypatch, setup_pygame):
+    screen, font, screen_width, screen_height = setup_pygame
+
+    def mock_get():
+        return [pygame.event.Event(KEYDOWN, {'key': K_y})]
+
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    def mock_quit():
+        raise SystemExit
+
+    monkeypatch.setattr(pygame, 'quit', mock_quit)
+
+    with pytest.raises(SystemExit):
+        ConfirmExit(screen, font, screen_width, screen_height)
+
+def test_game_cycle(monkeypatch, setup_pygame):
+    screen, font, screen_width, screen_height = setup_pygame
+
+    player = Character()
+    walls = [Wall((0, 0)), Wall((16, 0)), Wall((32, 0))]
+    coins = [Coin((16, 16)), Coin((32, 32), negative=True)]
+    end_rect = pygame.Rect(48, 48, 16, 16)
+    
+    # Инициализация переменной coin_count
+    coin_count = 0
+
+    # Создание словаря для отслеживания состояния клавиш
+    keys_pressed = {
+        K_LEFT: 0,
+        K_RIGHT: 0,
+        K_UP: 0,
+        K_DOWN: 0,
+    }
+
+    # Функция для получения состояния клавиш
+    def mock_get_pressed():
+        keys_pressed[K_LEFT] = 1
+        return keys_pressed
+
+    def mock_get():
+        return [pygame.event.Event(QUIT)]
+
+    monkeypatch.setattr(pygame.key, 'get_pressed', mock_get_pressed)
+    monkeypatch.setattr(pygame.event, 'get', mock_get)
+
+    running = True
+    while running:
+        for e in pygame.event.get():
+            if e.type == QUIT:
+                running = False
+
+        key = pygame.key.get_pressed()
+        if key[K_LEFT]:
+            player.move(-2, 0, walls)
+        if key[K_RIGHT]:
+            player.move(2, 0, walls)
+        if key[K_UP]:
+            player.move(0, -2, walls)
+        if key[K_DOWN]:
+            player.move(0, 2, walls)
+
+        for coin in coins[:]:
+            if player.rect.colliderect(coin.rect):
+                coins.remove(coin)
+                if coin.negative:
+                    if coin_count > 0:
+                        coin_count -= 1
+                else:
+                    coin_count += 1
+
+        if player.rect.colliderect(end_rect):
+            running = False
+
+    assert not running
+######################
+
+
 
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)
