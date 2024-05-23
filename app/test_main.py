@@ -1,6 +1,7 @@
 import pytest
 import pygame
-from main import Character, Wall, Coin
+from main import Character, Wall, Coin, GameStats
+import numpy as np
 
 # Фикстура для инициализации Pygame и создания персонажа
 @pytest.fixture
@@ -107,6 +108,51 @@ def test_positive_coin_default(setup_coin):
 def test_negative_coin_flag(setup_coin):
     _, negative_coin = setup_coin
     assert negative_coin.negative
+
+@pytest.fixture
+def setup_screen():
+    pygame.init()
+    screen_width, screen_height = 740, 580
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    font = pygame.font.SysFont(None, 36)
+    return screen, font, screen_width, screen_height
+
+# Тест для проверки отображения статистики игры
+def test_gamestats_display(setup_screen):
+    screen, font, screen_width, screen_height = setup_screen
+    message = "Тестовое сообщение"
+    coin_count = 5
+
+    # Вызов функции для отображения статистики
+    GameStats(screen, font, message, coin_count, screen_width, screen_height)
+
+    # Сохранение содержимого экрана в изображение
+    pygame.image.save(screen, "screenshot.png")
+
+    # Проверка, что изображение не пустое
+    image = pygame.image.load("screenshot.png")
+    image_array = pygame.surfarray.array3d(image)
+    
+    # Проверка, что экран не пуст (на нем что-то отрисовано)
+    assert np.any(image_array != 0), "Screen is empty"
+
+    # Проверка, что сообщение отобразилось правильно
+    text_surface = font.render(message, True, (255, 255, 255))
+    text_x = screen_width // 2 - text_surface.get_width() // 2
+    text_y = screen_height // 2 - text_surface.get_height() // 2 + 20
+
+    text_rendered_correctly = True
+    for y in range(text_surface.get_height()):
+        for x in range(text_surface.get_width()):
+            if text_surface.get_at((x, y))[:3] != (0, 0, 0):  # Проверка только RGB значений
+                if screen.get_at((text_x + x, text_y + y))[:3] != (255, 255, 255):
+                    text_rendered_correctly = False
+                    break
+        if not text_rendered_correctly:
+            break
+
+    assert text_rendered_correctly, "Text is not rendered correctly on the screen"
+
 
 # Закрытие Pygame после тестов
 @pytest.fixture(scope="module", autouse=True)
