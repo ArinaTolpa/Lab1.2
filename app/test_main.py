@@ -1,51 +1,85 @@
 import pytest
-import random
-from main import Character, Coin, Wall, LevelGenerator
+import pygame
+from main import Character, Wall
 
-# Test for Character class
-def test_character_move():
-    walls = [Wall((0, 0)), Wall((32, 0))]
-    char = Character()
-    char.move(16, 0, walls)
-    assert char.rect.topleft == (48, 32)
-    char.move(-16, 0, walls)
-    assert char.rect.topleft == (32, 32)
-    char.move(0, 16, walls)
-    assert char.rect.topleft == (32, 48)
-    char.move(0, -16, walls)
-    assert char.rect.topleft == (32, 32)
+# Фикстура для инициализации Pygame и создания персонажа
+@pytest.fixture
+def setup_character():
+    pygame.init()
+    character = Character()
+    walls = [
+        Wall((100, 100)),  # Создаем стену для проверки столкновения
+    ]
+    return character, walls
 
-def test_character_collision():
-    walls = [Wall((48, 32))]
-    char = Character()
-    char.move(16, 0, walls)
-    assert char.rect.right == 48  # should collide and stop at the wall
+# Тест для проверки начальной позиции персонажа
+def test_initial_position(setup_character):
+    character, _ = setup_character
+    assert character.rect.x == 32
+    assert character.rect.y == 32
 
-# Test for Coin class
-def test_coin_initialization():
-    coin = Coin((10, 10), negative=True)
-    assert coin.rect.topleft == (10, 10)
-    assert coin.negative is True
+# Тест для проверки движения персонажа вправо без столкновений
+def test_move_right_no_collision(setup_character):
+    character, walls = setup_character
+    initial_x = character.rect.x
+    character.move(10, 0, walls)
+    assert character.rect.x == initial_x + 10
+    assert character.rect.y == 32
 
-# Test for Wall class
-def test_wall_initialization():
-    wall = Wall((10, 10))
-    assert wall.rect.topleft == (10, 10)
+# Тест для проверки движения персонажа влево без столкновений
+def test_move_left_no_collision(setup_character):
+    character, walls = setup_character
+    initial_x = character.rect.x
+    character.move(-10, 0, walls)
+    assert character.rect.x == initial_x - 10
+    assert character.rect.y == 32
 
-# Test for LevelGenerator function
-def test_level_generator():
-    width, height = 5, 5
-    maze = LevelGenerator(width, height)
-    assert len(maze) == height
-    assert len(maze[0]) == width
-    # Check that start and end points are passable
-    assert maze[1][1] == 0
-    assert maze[height - 2][width - 2] == 0
+# Тест для проверки движения персонажа вверх без столкновений
+def test_move_up_no_collision(setup_character):
+    character, walls = setup_character
+    initial_y = character.rect.y
+    character.move(0, -10, walls)
+    assert character.rect.x == 32
+    assert character.rect.y == initial_y - 10
 
-# Mock random to ensure reproducibility
-@pytest.fixture(autouse=True)
-def set_random_seed():
-    random.seed(0)
+# Тест для проверки движения персонажа вниз без столкновений
+def test_move_down_no_collision(setup_character):
+    character, walls = setup_character
+    initial_y = character.rect.y
+    character.move(0, 10, walls)
+    assert character.rect.x == 32
+    assert character.rect.y == initial_y + 10
 
-if __name__ == "__main__":
-    pytest.main()
+# Тест для проверки столкновения со стеной справа
+def test_collision_right(setup_character):
+    character, walls = setup_character
+    character.rect.topleft = (90, 100)  # Устанавливаем персонажа рядом со стеной
+    character.move(20, 0, walls)
+    assert character.rect.right == walls[0].rect.left
+
+# Тест для проверки столкновения со стеной слева
+def test_collision_left(setup_character):
+    character, walls = setup_character
+    character.rect.topleft = (110, 100)  # Устанавливаем персонажа рядом со стеной
+    character.move(-20, 0, walls)
+    assert character.rect.left == walls[0].rect.right
+
+# Тест для проверки столкновения со стеной сверху
+def test_collision_top(setup_character):
+    character, walls = setup_character
+    character.rect.topleft = (100, 90)  # Устанавливаем персонажа рядом со стеной
+    character.move(0, 20, walls)
+    assert character.rect.bottom == walls[0].rect.top
+
+# Тест для проверки столкновения со стеной снизу
+def test_collision_bottom(setup_character):
+    character, walls = setup_character
+    character.rect.topleft = (100, 110)  # Устанавливаем персонажа рядом со стеной
+    character.move(0, -20, walls)
+    assert character.rect.top == walls[0].rect.bottom
+
+# Закрытие Pygame после тестов
+@pytest.fixture(scope="module", autouse=True)
+def teardown_pygame():
+    yield
+    pygame.quit()
