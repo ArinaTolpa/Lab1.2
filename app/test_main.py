@@ -3,6 +3,7 @@ import pygame
 from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n
 import os
+from unittest.mock import MagicMock
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -179,6 +180,68 @@ class TestShowStartScreen(unittest.TestCase):
         
     def tearDown(self):
         pygame.quit()
+
+class CoinCollectionTest(unittest.TestCase):
+    def setUp(self):
+        # Initialize Pygame modules
+        pygame.init()
+        
+        # Create a screen (not displayed in tests)
+        self.screen = pygame.display.set_mode((100, 100))
+        
+        # Create a player
+        self.player = Character()
+        self.player.rect.topleft = (50, 50)
+        
+        # Create some coins
+        self.positive_coin = Coin((60, 50), negative=False)
+        self.negative_coin = Coin((70, 50), negative=True)
+        
+        # Initialize coin count
+        self.coin_count = 0
+
+    def test_positive_coin_collection(self):
+        # Mock the player's rectangle to collide with the positive coin
+        self.player.rect = pygame.Rect(60, 50, 16, 16)
+        self.coins = [self.positive_coin]
+        
+        # Run the coin collection logic
+        for coin in self.coins[:]:
+            if self.player.rect.colliderect(coin.rect):
+                self.coins.remove(coin)
+                if coin.negative:
+                    if self.coin_count > 0:
+                        self.coin_count -= 1
+                else:
+                    self.coin_count += 1
+        
+        # Check if the coin count is increased
+        self.assertEqual(self.coin_count, 1, "Positive coin collection failed")
+
+    def test_negative_coin_collection(self):
+        # Set the coin count to 1
+        self.coin_count = 1
+        
+        # Mock the player's rectangle to collide with the negative coin
+        self.player.rect = pygame.Rect(70, 50, 16, 16)
+        self.coins = [self.negative_coin]
+        
+        # Run the coin collection logic
+        for coin in self.coins[:]:
+            if self.player.rect.colliderect(coin.rect):
+                self.coins.remove(coin)
+                if coin.negative:
+                    if self.coin_count > 0:
+                        self.coin_count -= 1
+                else:
+                    self.coin_count += 1
+        
+        # Check if the coin count is decreased
+        self.assertEqual(self.coin_count, 0, "Negative coin collection failed")
+
+    def tearDown(self):
+        pygame.quit()
+
 
 
 if __name__ == '__main__':
