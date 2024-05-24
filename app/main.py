@@ -5,41 +5,44 @@ import pygame
 import time
 
 # Класс для игрока (оранжевого персонажа)
-class Character(object):
+class Character(pygame.sprite.Sprite):
     def __init__(self):
-        self.rect = pygame.Rect(32, 32, 16, 16)
+        super().__init__()
+        self.image = pygame.Surface((16, 16))
+        self.image.fill((255, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (32, 32)
 
     def move(self, dx, dy, walls):
-        if dx != 0:
-            self.move_single_axis(dx, 0, walls)
-        if dy != 0:
-            self.move_single_axis(0, dy, walls)
-
-    def move_single_axis(self, dx, dy, walls):
         self.rect.x += dx
         self.rect.y += dy
+        print(f"Переместился в: {self.rect.topleft}")
+
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                if dx > 0:  # Движение вправо, столкновение с левой стороной стены
+                print(f"Столкновение: {self.rect} с {wall.rect}")
+                if dx > 0:  # Движение вправо
                     self.rect.right = wall.rect.left
-                if dx < 0:  # Движение влево, столкновение с правой стороной стены
+                if dx < 0:  # Движение влево
                     self.rect.left = wall.rect.right
-                if dy > 0:  # Движение вниз, столкновение с верхней стороной стены
+                if dy > 0:  # Движение вниз
                     self.rect.bottom = wall.rect.top
-                if dy < 0:  # Движение вверх, столкновение с нижней стороной стены
+                if dy < 0:  # Движение вверх
                     self.rect.top = wall.rect.bottom
-
-                # Отладочный вывод
-                print(f"Collision: {self.rect} with {wall.rect}")
+                print(f"Скорректировано до: {self.rect.topleft}")
 
 class Coin(object):
     def __init__(self, pos, negative=False):
         self.rect = pygame.Rect(pos[0], pos[1], 10, 10)
         self.negative = negative
 
-class Wall(object):
-    def __init__(self, pos):
-        self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+class Wall(pygame.sprite.Sprite):
+    def __init__(self, position):
+        super().__init__()
+        self.image = pygame.Surface((16, 16))
+        self.image.fill((0, 0, 255))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = position
 
 def LevelGenerator(width, height):
     maze = [[1] * width for _ in range(height)]
