@@ -1,6 +1,7 @@
 import unittest
 import pygame
-from main import Character, Wall, Coin, GameStats
+from main import Character, Wall, Coin, GameStats, ConfirmExit
+from pygame.locals import QUIT, KEYDOWN, K_y, K_n
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -107,6 +108,49 @@ class TestGameStats(unittest.TestCase):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.fail("GameStats caused the window to close unexpectedly")
+
+############################
+
+class TestConfirmExit(unittest.TestCase):
+    def test_confirm_exit_yes(self):
+        pygame.init()
+        screen = pygame.display.set_mode((640, 480))
+        font = pygame.font.SysFont(None, 36)
+
+        # Добавление события в очередь
+        pygame.event.post(pygame.event.Event(KEYDOWN, key=K_y))
+
+        # Проверка, что вызов ConfirmExit вызывает выход из системы
+        with self.assertRaises(SystemExit):
+            ConfirmExit(screen, font, 640, 480)
+
+    def test_confirm_exit_no(self):
+        pygame.init()
+        screen = pygame.display.set_mode((640, 480))
+        font = pygame.font.SysFont(None, 36)
+
+        # Добавление события в очередь
+        pygame.event.post(pygame.event.Event(KEYDOWN, key=K_n))
+
+        # Проверка, что ConfirmExit не завершает работу
+        try:
+            ConfirmExit(screen, font, 640, 480)
+        except SystemExit:
+            self.fail("ConfirmExit вызвал sys.exit() при нажатии 'N'")
+
+    def test_confirm_exit_quit_event(self):
+        pygame.init()
+        screen = pygame.display.set_mode((640, 480))
+        font = pygame.font.SysFont(None, 36)
+
+        # Добавление события в очередь
+        pygame.event.post(pygame.event.Event(QUIT))
+
+        # Проверка, что вызов ConfirmExit вызывает выход из системы
+        with self.assertRaises(SystemExit):
+            ConfirmExit(screen, font, 640, 480)
+
+
 
 if __name__ == '__main__':
     unittest.main()
