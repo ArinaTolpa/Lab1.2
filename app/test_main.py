@@ -1,6 +1,6 @@
 import unittest
 import pygame
-from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
+from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
 import os
 import time
@@ -312,6 +312,38 @@ class TestGame(unittest.TestCase):
         player.rect.topleft = (624, 464)  # Position exactly at the end
         end_rect = pygame.Rect(624, 464, 16, 16)  # End position
         self.assertTrue(player.rect.colliderect(end_rect))  # Check if player reached the end
+
+###################
+class TestInitializeGame(unittest.TestCase):
+
+    def test_initialize_game(self):
+        screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y = initialize_game()
+
+        # Check if screen dimensions are correct
+        self.assertEqual(screen_width, 740)
+        self.assertEqual(screen_height, 580)
+
+        # Check if maze offsets are correct
+        self.assertEqual(maze_offset_x, 0)
+        self.assertEqual(maze_offset_y, 50)
+
+        # Check if screen is a pygame Surface
+        self.assertIsInstance(screen, pygame.Surface)
+
+        # Check if the clock is a pygame.time.Clock object
+        self.assertIsInstance(clock, pygame.time.Clock)
+
+        # Check if walls list is initialized and empty
+        self.assertIsInstance(walls, list)
+        self.assertEqual(len(walls), 0)
+
+        # Check if player is an instance of Character
+        self.assertIsInstance(player, Character)
+
+        # Check if coins list is initialized and empty
+        self.assertIsInstance(coins, list)
+        self.assertEqual(len(coins), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
