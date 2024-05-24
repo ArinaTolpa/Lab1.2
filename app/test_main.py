@@ -92,6 +92,7 @@ def test_game_stats(setup_pygame):
 #    ShowStartScreen(screen, font, screen_width, screen_height)
 #    assert pygame.display.get_surface() is not None  # Проверка, что экран обновлен
 
+
 # Точка входа для запуска тестов
 if __name__ == "__main__":
     pytest.main()
