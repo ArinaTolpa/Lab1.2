@@ -4,6 +4,7 @@ import random
 import pygame
 import time
 
+
 # Класс для игрока (оранжевого персонажа)
 class Character(pygame.sprite.Sprite):
     def __init__(self):
@@ -121,7 +122,7 @@ def initialize_game():
 
     return screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y
 
-def generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y):
+def generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y, player):
     maze = LevelGenerator(maze_width, maze_height)
 
     # Обеспечение проходимости стартовых и конечных позиций
@@ -153,12 +154,12 @@ def generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offs
                     is_negative = random.random() < 0.33
                 else:
                     is_negative = False
-                
+
                 if is_negative:
                     negative_coin_count += 1
                 else:
                     positive_coin_count += 1
-                
+
                 # Создание монеты
                 coins.append(Coin((x * 16 + maze_offset_x, y * 16 + maze_offset_y), negative=is_negative))
 
@@ -178,16 +179,19 @@ def handle_events():
         if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
             ConfirmExit(screen, font, screen_width, screen_height)
 
-def move_player(player, walls):
-    key = pygame.key.get_pressed()
-    if key[pygame.K_LEFT]:
+def move_player(player, walls, key_state=None):
+    if key_state is None:
+        key_state = pygame.key.get_pressed()
+
+    if key_state[pygame.K_LEFT]:
         player.move(-2, 0, walls)
-    if key[pygame.K_RIGHT]:
+    if key_state[pygame.K_RIGHT]:
         player.move(2, 0, walls)
-    if key[pygame.K_UP]:
+    if key_state[pygame.K_UP]:
         player.move(0, -2, walls)
-    if key[pygame.K_DOWN]:
+    if key_state[pygame.K_DOWN]:
         player.move(0, 2, walls)
+
 
 def check_coin_collection(player, coins, coin_count):
     for coin in coins[:]:

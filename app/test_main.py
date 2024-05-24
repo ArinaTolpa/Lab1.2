@@ -1,6 +1,10 @@
 import unittest
 import pygame
-from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game
+from main import (
+    Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game,
+    generate_maze_and_elements
+
+)
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
 import os
 import time
@@ -313,7 +317,7 @@ class TestGame(unittest.TestCase):
         end_rect = pygame.Rect(624, 464, 16, 16)  # End position
         self.assertTrue(player.rect.colliderect(end_rect))  # Check if player reached the end
 
-###################
+
 class TestInitializeGame(unittest.TestCase):
 
     def test_initialize_game(self):
@@ -343,6 +347,82 @@ class TestInitializeGame(unittest.TestCase):
         # Check if coins list is initialized and empty
         self.assertIsInstance(coins, list)
         self.assertEqual(len(coins), 0)
+
+################################
+
+class TestMazeGeneration(unittest.TestCase):
+    def setUp(self):
+        pygame.init()
+        self.maze_width = 40
+        self.maze_height = 30
+        self.maze_offset_x = 0
+        self.maze_offset_y = 50
+        self.player = Character()
+
+    def test_maze_generation(self):
+        maze, player_start, end_rect, walls, coins = generate_maze_and_elements(
+            self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
+        )
+
+        # Проверка начальной позиции игрока
+        self.assertEqual(player_start, (1, 1))
+
+        # Проверка конечной позиции
+        expected_end_position = pygame.Rect(
+            (self.maze_width - 2) * 16 + self.maze_offset_x, 
+            (self.maze_height - 2) * 16 + self.maze_offset_y, 
+            16, 16
+        )
+        self.assertEqual(end_rect, expected_end_position)
+
+        # Проверка наличия стен
+        self.assertTrue(all(isinstance(wall, Wall) for wall in walls))
+
+        # Проверка наличия монет
+        self.assertTrue(all(isinstance(coin, Coin) for coin in coins))
+
+        # Проверка количества монет
+        positive_coins = [coin for coin in coins if not coin.negative]
+        negative_coins = [coin for coin in coins if coin.negative]
+        self.assertGreaterEqual(len(positive_coins), len(negative_coins))
+
+        # Проверка, что количество отрицательных монет меньше положительных
+        self.assertLessEqual(len(negative_coins), len(positive_coins) // 2)
+
+    # def test_walls_positions(self):
+    #     _, _, _, walls, _ = generate_maze_and_elements(
+    #         self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
+    #     )
+
+    #     for wall in walls:
+    #         x, y = wall.rect.topleft
+    #         self.assertTrue(x % 16 == 0 and y % 16 == 0, f"Wall at ({x}, {y}) is not aligned to the grid")
+
+    # def test_coins_positions(self):
+    #     _, _, _, _, coins = generate_maze_and_elements(
+    #         self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
+    #     )
+
+    #     for coin in coins:
+    #         x, y = coin.rect.topleft
+    #         self.assertTrue(x % 16 == 0 and y % 16 == 0, f"Coin at ({x}, {y}) is not aligned to the grid")
+
+    def test_player_start_position(self):
+        _, player_start, _, _, _ = generate_maze_and_elements(
+            self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
+        )
+        self.assertEqual(player_start, (1, 1))
+
+    def test_end_position(self):
+        _, _, end_rect, _, _ = generate_maze_and_elements(
+            self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
+        )
+        expected_end_position = pygame.Rect(
+            (self.maze_width - 2) * 16 + self.maze_offset_x, 
+            (self.maze_height - 2) * 16 + self.maze_offset_y, 
+            16, 16
+        )
+        self.assertEqual(end_rect, expected_end_position)
 
 
 if __name__ == '__main__':
