@@ -4,7 +4,6 @@ import random
 import pygame
 import time
 
-
 # Класс для игрока (оранжевого персонажа)
 class Character(pygame.sprite.Sprite):
     def __init__(self):
@@ -243,7 +242,7 @@ def draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time,
 if __name__ == "__main__":
     screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y = initialize_game()
     maze_width, maze_height = 40, 30
-    maze, player_start, end_rect, walls, coins = generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y)
+    maze, player_start, end_rect, walls, coins = generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y, player)
 
     # Инициализация счетчика монет и таймера
     coin_count = 0
