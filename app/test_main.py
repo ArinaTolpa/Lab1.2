@@ -2,7 +2,7 @@ import unittest
 import pygame
 from main import (
     Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game,
-    generate_maze_and_elements
+    generate_maze_and_elements, check_coin_collection
 
 )
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
@@ -348,7 +348,6 @@ class TestInitializeGame(unittest.TestCase):
         self.assertIsInstance(coins, list)
         self.assertEqual(len(coins), 0)
 
-################################
 
 class TestMazeGeneration(unittest.TestCase):
     def setUp(self):
@@ -423,6 +422,56 @@ class TestMazeGeneration(unittest.TestCase):
             16, 16
         )
         self.assertEqual(end_rect, expected_end_position)
+
+#######################
+
+class TestCheckCoinCollection(unittest.TestCase):
+    
+    def setUp(self):
+        # Инициализация pygame
+        pygame.init()
+        self.player = Character()
+        self.player.rect.topleft = (50, 50)
+        
+    def test_collect_positive_coin(self):
+        coin = Coin((50, 50), negative=False)
+        coins = [coin]
+        initial_coin_count = 0
+
+        new_coin_count = check_coin_collection(self.player, coins, initial_coin_count)
+        
+        self.assertEqual(new_coin_count, 1)
+        self.assertNotIn(coin, coins)
+
+    def test_collect_negative_coin(self):
+        coin = Coin((50, 50), negative=True)
+        coins = [coin]
+        initial_coin_count = 1
+
+        new_coin_count = check_coin_collection(self.player, coins, initial_coin_count)
+        
+        self.assertEqual(new_coin_count, 0)
+        self.assertNotIn(coin, coins)
+        
+    def test_collect_negative_coin_with_zero_count(self):
+        coin = Coin((50, 50), negative=True)
+        coins = [coin]
+        initial_coin_count = 0
+
+        new_coin_count = check_coin_collection(self.player, coins, initial_coin_count)
+        
+        self.assertEqual(new_coin_count, 0)
+        self.assertNotIn(coin, coins)
+        
+    def test_no_coin_collision(self):
+        coin = Coin((100, 100), negative=False)
+        coins = [coin]
+        initial_coin_count = 0
+
+        new_coin_count = check_coin_collection(self.player, coins, initial_coin_count)
+        
+        self.assertEqual(new_coin_count, 0)
+        self.assertIn(coin, coins)
 
 
 if __name__ == '__main__':
