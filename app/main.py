@@ -102,7 +102,7 @@ def ShowStartScreen(screen, font, screen_width, screen_height):
             if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
                 return
 
-if __name__ == "__main__":
+def initialize_game():
     # Инициализация pygame
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.init()
@@ -119,8 +119,9 @@ if __name__ == "__main__":
     player = Character()  # Создание игрока
     coins = []  # Список для хранения монет
 
-    # Генерация случайного лабиринта
-    maze_width, maze_height = 40, 30
+    return screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y
+
+def generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y):
     maze = LevelGenerator(maze_width, maze_height)
 
     # Обеспечение проходимости стартовых и конечных позиций
@@ -129,9 +130,12 @@ if __name__ == "__main__":
     end_position = (maze_width - 2, maze_height - 2)
     maze[maze_height - 2][maze_width - 2] = 0
 
-    # Парсинг сетки лабиринта и создание стен и монет
+    walls = []
+    coins = []
     positive_coin_count = 0
     negative_coin_count = 0
+
+    # Парсинг сетки лабиринта и создание стен и монет
     for y in range(maze_height):
         for x in range(maze_width):
             if maze[y][x] == 1:
@@ -164,6 +168,79 @@ if __name__ == "__main__":
     for y in range(maze_height):
         walls.append(Wall((maze_width * 16 + maze_offset_x, y * 16 + maze_offset_y)))
 
+    return maze, player_start, end_rect, walls, coins
+
+def handle_events():
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+            ConfirmExit(screen, font, screen_width, screen_height)
+
+def move_player(player, walls):
+    key = pygame.key.get_pressed()
+    if key[pygame.K_LEFT]:
+        player.move(-2, 0, walls)
+    if key[pygame.K_RIGHT]:
+        player.move(2, 0, walls)
+    if key[pygame.K_UP]:
+        player.move(0, -2, walls)
+    if key[pygame.K_DOWN]:
+        player.move(0, 2, walls)
+
+def check_coin_collection(player, coins, coin_count):
+    for coin in coins[:]:
+        if player.rect.colliderect(coin.rect):
+            coins.remove(coin)  # Удаление монеты, если игрок ее собирает
+            if coin.negative:
+                if coin_count > 0:  # Уменьшение счетчика монет только если он больше нуля
+                    coin_count -= 1
+            else:
+                coin_count += 1  # Увеличение счетчика монет, если это положительная монета
+    return coin_count
+
+def check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height):
+    elapsed_time = time.time() - start_time
+    if coin_count >= 20:
+        GameStats(screen, font, f"Вы победили! Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
+        pygame.quit()
+        sys.exit()
+
+    if player.rect.colliderect(end_rect):
+        GameStats(screen, font, f"Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
+        pygame.quit()
+        sys.exit()
+
+    if elapsed_time > max_time:
+        GameStats(screen, font, f"Время истекло", coin_count, screen_width, screen_height)
+        pygame.quit()
+        sys.exit()
+
+def draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width):
+    screen.fill((0, 0, 0))
+    for wall in walls:
+        pygame.draw.rect(screen, (255, 255, 255), wall.rect)
+    for coin in coins:
+        color = (255, 0, 0) if coin.negative else (255, 255, 0)  # Красные для отрицательных монет, желтые для положительных
+        pygame.draw.ellipse(screen, color, coin.rect)  # Отрисовка монет
+    pygame.draw.rect(screen, (255, 0, 0), end_rect)
+    pygame.draw.rect(screen, (255, 200, 0), player.rect)
+
+    # Отображение счетчика монет и таймера вне области лабиринта
+    coin_text = font.render(f"Монеты: {coin_count}", True, (255, 255, 255))
+    screen.blit(coin_text, (10, 10))
+    
+    timer_text = font.render(f"Время: {elapsed_time:.2f} с", True, (255, 255, 255))
+    screen.blit(timer_text, (screen_width - timer_text.get_width() - 10, 10))
+
+    pygame.display.flip()
+
+if __name__ == "__main__":
+    screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y = initialize_game()
+    maze_width, maze_height = 40, 30
+    maze, player_start, end_rect, walls, coins = generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y)
+
     # Инициализация счетчика монет и таймера
     coin_count = 0
     font = pygame.font.SysFont(None, 36)
@@ -177,74 +254,13 @@ if __name__ == "__main__":
     running = True
     start_time = time.time()
     while running:
-
         clock.tick(60)
-
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                running = False
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                ConfirmExit(screen, font, screen_width, screen_height)
-
-        # Перемещение игрока при нажатии клавиши со стрелкой
-        key = pygame.key.get_pressed()
-        if key[pygame.K_LEFT]:
-            player.move(-2, 0, walls)
-        if key[pygame.K_RIGHT]:
-            player.move(2, 0, walls)
-        if key[pygame.K_UP]:
-            player.move(0, -2, walls)
-        if key[pygame.K_DOWN]:
-            player.move(0, 2, walls)
-
-        # Проверка, собирает ли игрок монету
-        for coin in coins[:]:
-            if player.rect.colliderect(coin.rect):
-                coins.remove(coin)  # Удаление монеты, если игрок ее собирает
-                if coin.negative:
-                    if coin_count > 0:  # Уменьшение счетчика монет только если он больше нуля
-                        coin_count -= 1
-                else:
-                    coin_count += 1  # Увеличение счетчика монет, если это положительная монета
-
-        # Проверка, собрал ли игрок 20 монет
-        if coin_count >= 20:
-            elapsed_time = time.time() - start_time
-            GameStats(screen, font, f"Вы победили! Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
-            pygame.quit()
-            sys.exit()
-
-        # Проверка, достигает ли игрок конца
-        if player.rect.colliderect(end_rect):
-            elapsed_time = time.time() - start_time
-            GameStats(screen, font, f"Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
-            pygame.quit()
-            sys.exit()
-
-        # Проверка, истекло ли время
-        elapsed_time = time.time() - start_time
-        if elapsed_time > max_time:
-            GameStats(screen, font, f"Время истекло", coin_count, screen_width, screen_height)
-            pygame.quit()
-            sys.exit()
-
-        # Отрисовка сцены
-        screen.fill((0, 0, 0))
-        for wall in walls:
-            pygame.draw.rect(screen, (255, 255, 255), wall.rect)
-        for coin in coins:
-            color = (255, 0, 0) if coin.negative else (255, 255, 0)  # Красные для отрицательных монет, желтые для положительных
-            pygame.draw.ellipse(screen, color, coin.rect)  # Отрисовка монет
-        pygame.draw.rect(screen, (255, 0, 0), end_rect)
-        pygame.draw.rect(screen, (255, 200, 0), player.rect)
-
-        # Отображение счетчика монет и таймера вне области лабиринта
-        coin_text = font.render(f"Монеты: {coin_count}", True, (255, 255, 255))
-        screen.blit(coin_text, (10, 10))
+        handle_events()
+        move_player(player, walls)
+        coin_count = check_coin_collection(player, coins, coin_count)
+        check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height)
         
-        timer_text = font.render(f"Время: {elapsed_time:.2f} с", True, (255, 255, 255))
-        screen.blit(timer_text, (screen_width - timer_text.get_width() - 10, 10))
-
-        pygame.display.flip()
+        elapsed_time = time.time() - start_time
+        draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width)
 
     pygame.quit()
