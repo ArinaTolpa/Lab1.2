@@ -170,52 +170,8 @@ if __name__ == "__main__":
     start_time = time.time()
     max_time = 120  # Максимальное время в секундах
 
-    def GameStats(message):
-        # Отображение статистики игры
-        screen.fill((0, 0, 0))
-        stats_text = font.render(f"Всего собрано монет: {coin_count}", True, (255, 255, 255))
-        message_text = font.render(message, True, (255, 255, 255))
-        screen.blit(stats_text, (screen_width // 2 - stats_text.get_width() // 2, screen_height // 2 - stats_text.get_height() // 2 - 20))
-        screen.blit(message_text, (screen_width // 2 - message_text.get_width() // 2, screen_height // 2 - message_text.get_height() // 2 + 20))
-        pygame.display.flip()
-        pygame.time.wait(3000)  # Отображение статистики в течение 3 секунд
-
-    def ConfirmExit():
-        # Подтверждение выхода из игры
-        screen.fill((0, 0, 0))
-        confirm_text = font.render("Вы уверены, что хотите выйти? (Y/N)", True, (255, 255, 255))
-        screen.blit(confirm_text, (screen_width // 2 - confirm_text.get_width() // 2, screen_height // 2 - confirm_text.get_height() // 2))
-        pygame.display.flip()
-
-        while True:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_y:
-                        pygame.quit()
-                        sys.exit()
-                    if e.key == pygame.K_n:
-                        return
-
-    def ShowStartScreen():
-        # Отображение начального экрана
-        screen.fill((0, 0, 0))
-        start_text = font.render("Нажмите Enter для начала игры", True, (255, 255, 255))
-        screen.blit(start_text, (screen_width // 2 - start_text.get_width() // 2, screen_height // 2 - start_text.get_height() // 2))
-        pygame.display.flip()
-
-        while True:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                    return
-
     # Показ начального экрана
-    ShowStartScreen()
+    ShowStartScreen(screen, font, screen_width, screen_height)
 
     # Начало игры
     running = True
@@ -228,7 +184,7 @@ if __name__ == "__main__":
             if e.type == pygame.QUIT:
                 running = False
             if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                ConfirmExit()
+                ConfirmExit(screen, font, screen_width, screen_height)
 
         # Перемещение игрока при нажатии клавиши со стрелкой
         key = pygame.key.get_pressed()
@@ -254,21 +210,21 @@ if __name__ == "__main__":
         # Проверка, собрал ли игрок 20 монет
         if coin_count >= 20:
             elapsed_time = time.time() - start_time
-            GameStats(f"Вы победили! Время: {elapsed_time:.2f} секунд")
+            GameStats(screen, font, f"Вы победили! Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
             pygame.quit()
             sys.exit()
 
         # Проверка, достигает ли игрок конца
         if player.rect.colliderect(end_rect):
             elapsed_time = time.time() - start_time
-            GameStats(f"Время: {elapsed_time:.2f} секунд")
+            GameStats(screen, font, f"Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)
             pygame.quit()
             sys.exit()
 
         # Проверка, истекло ли время
         elapsed_time = time.time() - start_time
         if elapsed_time > max_time:
-            GameStats(f"Время истекло")
+            GameStats(screen, font, f"Время истекло", coin_count, screen_width, screen_height)
             pygame.quit()
             sys.exit()
 
