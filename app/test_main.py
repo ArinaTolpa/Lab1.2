@@ -1,7 +1,8 @@
 import unittest
 import pygame
-from main import Character, Wall, Coin, GameStats, ConfirmExit
+from main import Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n
+import os
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -109,7 +110,6 @@ class TestGameStats(unittest.TestCase):
             if event.type == pygame.QUIT:
                 self.fail("GameStats caused the window to close unexpectedly")
 
-############################
 
 class TestConfirmExit(unittest.TestCase):
     def test_confirm_exit_yes(self):
@@ -150,6 +150,35 @@ class TestConfirmExit(unittest.TestCase):
         with self.assertRaises(SystemExit):
             ConfirmExit(screen, font, 640, 480)
 
+###########################################
+class TestShowStartScreen(unittest.TestCase):
+    
+    def setUp(self):
+        # Инициализация pygame и создание экрана
+        os.environ["SDL_VIDEO_CENTERED"] = "1"
+        pygame.init()
+        self.screen_width, self.screen_height = 740, 580
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # Настоящий экран
+        self.font = pygame.font.SysFont(None, 36)
+        
+    def test_show_start_screen(self):
+        # Симуляция нажатия клавиши ENTER для начала игры
+        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_RETURN}))
+        
+        ShowStartScreen(self.screen, self.font, self.screen_width, self.screen_height)
+        
+        # Проверка, что функция вышла из цикла while
+        self.assertTrue(True)
+    
+    def test_quit_game(self):
+        # Симуляция выхода из игры
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+        
+        with self.assertRaises(SystemExit):
+            ShowStartScreen(self.screen, self.font, self.screen_width, self.screen_height)
+        
+    def tearDown(self):
+        pygame.quit()
 
 
 if __name__ == '__main__':
