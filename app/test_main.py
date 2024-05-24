@@ -106,6 +106,48 @@ def test_confirm_exit_quit(monkeypatch, pygame_init):
         ConfirmExit(screen, font, screen_width, screen_height)
 ###############
 
+# Задаем размеры экрана
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+@pytest.fixture
+def screen():
+    # Создаем фиктивный экран для тестирования
+    return pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+@pytest.fixture
+def font():
+    # Инициализируем модуль шрифтов pygame
+    pygame.font.init()
+    # Создаем фиктивный шрифт для тестирования
+    return pygame.font.SysFont(None, 36)
+
+def test_show_start_screen(screen, font, mocker):
+    # Мокаем экран и шрифт
+    screen_mock = mocker.Mock()
+    font_mock = mocker.Mock()
+
+    # Мокаем метод render, чтобы он возвращал Surface
+    font_mock.render.return_value = pygame.Surface((100, 50))
+
+    # Мокаем очередь событий pygame, чтобы симулировать нажатие Enter
+    mocker.patch('pygame.event.get', return_value=[pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_RETURN})])
+    mocker.patch('pygame.display.flip')
+
+    # Вызываем тестируемую функцию
+    ShowStartScreen(screen_mock, font_mock, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+    # Проверяем, что метод render был вызван
+    font_mock.render.assert_called_with("Нажмите Enter для начала игры", True, (255, 255, 255))
+
+    # Проверяем, что дисплей обновился
+    pygame.display.flip.assert_called()
+
+# Фикстура для завершения работы pygame после всех тестов
+@pytest.fixture(scope="session", autouse=True)
+def cleanup():
+    yield
+    pygame.quit()
 
 if __name__ == "__main__":
     pytest.main()
