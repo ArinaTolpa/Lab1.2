@@ -21,9 +21,9 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        coverage run -m app/test_main.py
-        coverage xml
-        coverage report
+        python -m coverage run -m python app/test_main.py
+        python -m coverage xml
+        python -m coverage report
 
     - name: Upload coverage to Coveralls
       uses: coverallsapp/github-action@v2
