@@ -203,7 +203,8 @@ def check_coin_collection(player, coins, coin_count):
                 coin_count += 1  # Увеличение счетчика монет, если это положительная монета
     return coin_count
 
-def check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height):
+# Измените определение функции check_game_end, добавив max_time как параметр
+def check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height, max_time):
     elapsed_time = time.time() - start_time
     if coin_count >= 20:
         GameStats(screen, font, f"Вы победили! Время: {elapsed_time:.2f} секунд", coin_count, screen_width, screen_height)

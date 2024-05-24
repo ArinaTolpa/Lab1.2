@@ -2,7 +2,7 @@ import unittest
 import pygame
 from main import (
     Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game,
-    generate_maze_and_elements, check_coin_collection
+    generate_maze_and_elements, check_coin_collection, check_game_end
 
 )
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
@@ -423,7 +423,6 @@ class TestMazeGeneration(unittest.TestCase):
         )
         self.assertEqual(end_rect, expected_end_position)
 
-#######################
 
 class TestCheckCoinCollection(unittest.TestCase):
     
@@ -472,6 +471,51 @@ class TestCheckCoinCollection(unittest.TestCase):
         
         self.assertEqual(new_coin_count, 0)
         self.assertIn(coin, coins)
+
+ ############################################
+class TestCheckGameEnd(unittest.TestCase):
+
+    def setUp(self):
+        # Инициализация pygame
+        pygame.init()
+        self.screen, self.clock, self.walls, self.player, self.coins, self.screen_width, self.screen_height, self.maze_offset_x, self.maze_offset_y = initialize_game()
+        self.font = pygame.font.SysFont(None, 36)
+
+    def tearDown(self):
+        pygame.quit()
+
+    def test_check_game_end_victory(self):
+        coin_count = 20  # Условие для победы
+        start_time = time.time() - 50  # Убедимся, что время меньше max_time
+        max_time = 120
+
+        self.player.rect.topleft = (100, 100)
+        end_rect = pygame.Rect(200, 200, 16, 16)
+
+        with self.assertRaises(SystemExit):
+            check_game_end(self.player, end_rect, coin_count, start_time, self.screen, self.font, self.screen_width, self.screen_height, max_time)
+
+    def test_check_game_end_reach_end(self):
+        coin_count = 15  # Условие для победы не выполнено
+        start_time = time.time() - 50  # Убедимся, что время меньше max_time
+        max_time = 120
+
+        self.player.rect.topleft = (200, 200)  # Игрок достигает конца
+        end_rect = pygame.Rect(200, 200, 16, 16)
+
+        with self.assertRaises(SystemExit):
+            check_game_end(self.player, end_rect, coin_count, start_time, self.screen, self.font, self.screen_width, self.screen_height, max_time)
+
+    def test_check_game_end_time_out(self):
+        coin_count = 10  # Условие для победы не выполнено
+        start_time = time.time() - 130  # Время больше max_time
+        max_time = 120
+
+        self.player.rect.topleft = (100, 100)
+        end_rect = pygame.Rect(200, 200, 16, 16)
+
+        with self.assertRaises(SystemExit):
+            check_game_end(self.player, end_rect, coin_count, start_time, self.screen, self.font, self.screen_width, self.screen_height, max_time)
 
 
 if __name__ == '__main__':
