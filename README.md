@@ -1,5 +1,6 @@
 [![Python application](https://github.com/ArinaTolpa/Lab1.2/actions/workflows/connect.yml/badge.svg)](https://github.com/ArinaTolpa/Lab1.2/actions/workflows/connect.yml)
 [![Coverage Status](https://coveralls.io/repos/github/ArinaTolpa/Lab1.2/badge.svg)](https://coveralls.io/github/ArinaTolpa/Lab1.2)
+
 Описание приложения
 	•	Игра “Человечек в лабиринте”
 	•	Игра содержит несколько лабиринтов, которые определяются рандомно 
