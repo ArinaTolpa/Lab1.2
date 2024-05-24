@@ -20,14 +20,17 @@ class Character(object):
         self.rect.y += dy
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                if dx > 0:
+                if dx > 0:  # Движение вправо, столкновение с левой стороной стены
                     self.rect.right = wall.rect.left
-                if dx < 0:
+                if dx < 0:  # Движение влево, столкновение с правой стороной стены
                     self.rect.left = wall.rect.right
-                if dy > 0:
+                if dy > 0:  # Движение вниз, столкновение с верхней стороной стены
                     self.rect.bottom = wall.rect.top
-                if dy < 0:
+                if dy < 0:  # Движение вверх, столкновение с нижней стороной стены
                     self.rect.top = wall.rect.bottom
+
+                # Отладочный вывод
+                print(f"Collision: {self.rect} with {wall.rect}")
 
 class Coin(object):
     def __init__(self, pos, negative=False):
