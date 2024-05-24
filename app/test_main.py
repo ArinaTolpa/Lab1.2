@@ -68,31 +68,44 @@ def test_game_stats(setup_pygame):
     GameStats(screen, font, message, coin_count, screen_width, screen_height)
     assert pygame.display.get_surface() is not None  # Проверка, что экран обновлен
 
-# Тест для проверки отображения экрана подтверждения выхода
-#@patch('sys.exit')  # Мок для перехвата вызова sys.exit
-#def test_confirm_exit(mock_exit, setup_pygame):
-#    screen, font = setup_pygame
-#    screen_width, screen_height = screen.get_size()
+###############
+@pytest.fixture
+def pygame_init():
+    pygame.init()
+    screen_width, screen_height = 740, 580
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    font = pygame.font.SysFont(None, 36)
+    yield screen, font, screen_width, screen_height
+    pygame.quit()
 
-    # Использование pygame.event.post для имитации нажатия клавиши
-#    pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_y))
+def test_confirm_exit_yes(monkeypatch, pygame_init):
+    screen, font, screen_width, screen_height = pygame_init
 
-    # Запуск цикла событий для обработки события
-#    pygame.event.pump()
+    # Simulate pressing the 'Y' key
+    monkeypatch.setattr(pygame.event, 'get', lambda: [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_y)])
 
-#    ConfirmExit(screen, font, screen_width, screen_height)
+    with pytest.raises(SystemExit):  # Expecting a system exit when 'Y' is pressed
+        ConfirmExit(screen, font, screen_width, screen_height)
 
-    # Проверка, что sys.exit был вызван
-#    mock_exit.assert_called_once()
+def test_confirm_exit_no(monkeypatch, pygame_init):
+    screen, font, screen_width, screen_height = pygame_init
 
-# Тест для проверки отображения начального экрана
-#def test_show_start_screen(setup_pygame):
-#    screen, font = setup_pygame
-#    screen_width, screen_height = screen.get_size()
-#    ShowStartScreen(screen, font, screen_width, screen_height)
-#    assert pygame.display.get_surface() is not None  # Проверка, что экран обновлен
+    # Simulate pressing the 'N' key
+    monkeypatch.setattr(pygame.event, 'get', lambda: [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_n)])
+
+    # Run ConfirmExit and expect it to return without exiting
+    ConfirmExit(screen, font, screen_width, screen_height)
+
+def test_confirm_exit_quit(monkeypatch, pygame_init):
+    screen, font, screen_width, screen_height = pygame_init
+
+    # Simulate pressing the window close button
+    monkeypatch.setattr(pygame.event, 'get', lambda: [pygame.event.Event(pygame.QUIT)])
+
+    with pytest.raises(SystemExit):  # Expecting a system exit when QUIT event is detected
+        ConfirmExit(screen, font, screen_width, screen_height)
+###############
 
 
-# Точка входа для запуска тестов
 if __name__ == "__main__":
     pytest.main()
