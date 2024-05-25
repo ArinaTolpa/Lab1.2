@@ -609,73 +609,74 @@ class TestHandleEvents(unittest.TestCase):
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Класс обертка для экрана
-class MockScreen(pygame.Surface):
-    def __init__(self, width, height):
-        super().__init__((width, height))
-        self.fill_calls = []
-        self.blit_calls = []
-
-    def fill(self, color):
-        self.fill_calls.append(color)
-        super().fill(color)
-
-    def blit(self, source, dest):
-        self.blit_calls.append((source, dest))
-        super().blit(source, dest)
-
-    def get_fill_calls(self):
-        return self.fill_calls
-
-    def get_blit_calls(self):
-        return self.blit_calls
-
-class TestDrawScene(unittest.TestCase):
+class GameTestCase(unittest.TestCase):
     def setUp(self):
-        # Инициализация Pygame
+        # Инициализация pygame
         pygame.init()
-        
-        # Создание экрана и необходимых объектов
-        self.screen = MockScreen(800, 600)
+        self.screen, self.clock, self.walls, self.player, self.coins, self.screen_width, self.screen_height, self.maze_offset_x, self.maze_offset_y = initialize_game()
         self.font = pygame.font.SysFont(None, 36)
-        self.walls = [pygame.sprite.Sprite() for _ in range(5)]
-        for wall in self.walls:
-            wall.rect = pygame.Rect(0, 0, 16, 16)
+        self.max_time = 120  # Максимальное время в секундах
+
+    def test_initialize_game(self):
+        self.assertIsNotNone(self.screen)
+        self.assertIsNotNone(self.clock)
+        self.assertIsInstance(self.player, Character)
+        self.assertEqual(len(self.walls), 0)
+        self.assertEqual(len(self.coins), 0)
+        self.assertEqual(self.screen_width, 740)
+        self.assertEqual(self.screen_height, 580)
+        self.assertEqual(self.maze_offset_x, 0)
+        self.assertEqual(self.maze_offset_y, 50)
+
+    def test_generate_maze_and_elements(self):
+        maze_width, maze_height = 40, 30
+        maze, player_start, end_rect, walls, coins = generate_maze_and_elements(maze_width, maze_height, self.maze_offset_x, self.maze_offset_y, self.player)
+        self.assertEqual(maze[1][1], 0)
+        self.assertEqual(self.player.rect.topleft, (1 * 16 + self.maze_offset_x, 1 * 16 + self.maze_offset_y))
+        self.assertEqual(maze[maze_height-2][maze_width-2], 0)
+        self.assertIsInstance(end_rect, pygame.Rect)
+        self.assertGreater(len(walls), 0)
+        self.assertGreater(len(coins), 0)
+
+    def test_handle_events(self):
+        for event in [pygame.event.Event(pygame.QUIT)]:
+            pygame.event.post(event)
+        with self.assertRaises(SystemExit):
+            handle_events()
+
+    def test_move_player(self):
+        initial_x = self.player.rect.x
+        initial_y = self.player.rect.y
+        key_state = pygame.key.get_pressed()
         
-        self.coins = [Coin((50, 50)), Coin((100, 100), negative=True)]
+        # Simulate left arrow key press
+        key_state = {pygame.K_LEFT: 1, pygame.K_RIGHT: 0, pygame.K_UP: 0, pygame.K_DOWN: 0}
+        move_player(self.player, self.walls, key_state)
+        self.assertEqual(self.player.rect.x, initial_x - 2)
         
-        self.player = Character()
-        self.player.rect.topleft = (32, 32)
-        
-        self.end_rect = pygame.Rect(700, 500, 16, 16)
-        
-        self.coin_count = 5
-        self.elapsed_time = 10.5
-        self.screen_width = 800
-    
-    def tearDown(self):
-        pygame.quit()
+        # Simulate right arrow key press
+        key_state = {pygame.K_LEFT: 0, pygame.K_RIGHT: 1, pygame.K_UP: 0, pygame.K_DOWN: 0}
+        move_player(self.player, self.walls, key_state)
+        self.assertEqual(self.player.rect.x, initial_x)
+
+    def test_check_coin_collection(self):
+        self.player.rect.topleft = (30, 30)
+        coin = Coin((30, 30))
+        self.coins.append(coin)
+        coin_count = check_coin_collection(self.player, self.coins, 0)
+        self.assertEqual(coin_count, 1)
+        self.assertEqual(len(self.coins), 0)
+
+    def test_check_game_end(self):
+        end_rect = pygame.Rect(100, 100, 16, 16)
+        start_time = time.time() - 130  # 130 секунд назад
+        with self.assertRaises(SystemExit):
+            check_game_end(self.player, end_rect, 0, start_time, self.screen, self.font, self.screen_width, self.screen_height, self.max_time)
 
     # def test_draw_scene(self):
-    #     with patch('pygame.draw.rect') as mock_draw_rect, \
-    #          patch('pygame.draw.ellipse') as mock_draw_ellipse, \
-    #          patch('pygame.display.flip') as mock_display_flip:
-
-    #         # Вызов функции отрисовки
-    #         draw_scene(self.screen, self.walls, self.coins, self.player, self.end_rect, self.coin_count, self.elapsed_time, self.screen_width)
-        
-    #         # Проверка вызовов функций Pygame
-    #         self.assertEqual(self.screen.get_fill_calls(), [(0, 0, 0)])
-    #         self.assertEqual(mock_draw_rect.call_count, len(self.walls) + 2)  # Стены + игрок и конечная позиция
-    #         self.assertEqual(mock_draw_ellipse.call_count, len(self.coins))
-        
-    #         coin_text = self.font.render(f"Монеты: {self.coin_count}", True, (255, 255, 255))
-    #         timer_text = self.font.render(f"Время: {self.elapsed_time:.2f} с", True, (255, 255, 255))
-
-    #         self.assertIn((coin_text, (10, 10)), self.screen.get_blit_calls())
-    #         self.assertIn((timer_text, (self.screen_width - timer_text.get_width() - 10, 10)), self.screen.get_blit_calls())
-        
-    #         mock_display_flip.assert_called_once()
+    #     end_rect = pygame.Rect(100, 100, 16, 16)
+    #     draw_scene(self.screen, self.walls, self.coins, self.player, end_rect, 0, 0.0, self.screen_width)
+    #     self.assertEqual(self.screen.get_at((0, 0)), (0, 0, 0, 255))  # Checking if the screen was filled with black
 
 
 
