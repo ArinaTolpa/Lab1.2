@@ -9,7 +9,7 @@ from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
 import os
 from unittest.mock import patch, MagicMock
 import time
-import sys
+import main
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -576,6 +576,54 @@ class TestMovePlayer(unittest.TestCase):
     #     self.assertEqual(self.player.rect.bottom, 50)  # The player should not pass the wall
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+screen = None
+font = None
+screen_width = None
+screen_height = None
+
+class TestHandleEvents(unittest.TestCase):
+    def setUp(self):
+        global screen, font, screen_width, screen_height
+
+        pygame.init()
+        screen = pygame.display.set_mode((800, 600))
+        font = pygame.font.SysFont(None, 36)
+        screen_width = 800
+        screen_height = 600
+
+        # Сохранение оригинальной функции
+        self.original_confirm_exit = main.ConfirmExit
+
+        # Мокируем функцию ConfirmExit
+        self.confirm_exit_mock = MagicMock()
+        main.ConfirmExit = self.confirm_exit_mock
+
+    def tearDown(self):
+        pygame.quit()
+
+        # Восстановление оригинальной функции ConfirmExit
+        main.ConfirmExit = self.original_confirm_exit
+
+    def test_handle_quit_event(self):
+        for event in [pygame.event.Event(pygame.QUIT)]:
+            pygame.event.post(event)
+        with self.assertRaises(SystemExit):
+            handle_events()
+
+    # def test_handle_escape_event(self):
+    #     for event in [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)]:
+    #         pygame.event.post(event)
+    #     handle_events()
+    #     self.confirm_exit_mock.assert_called_once_with(screen, font, screen_width, screen_height)
+
+    def test_no_event(self):
+        handle_events()  # Should simply pass through without error
+
+    def test_handle_other_key_event(self):
+        for event in [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)]:
+            pygame.event.post(event)
+        handle_events()  # Should not call ConfirmExit
+        self.confirm_exit_mock.assert_not_called()
 
 
 
