@@ -609,6 +609,73 @@ class TestHandleEvents(unittest.TestCase):
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Класс обертка для экрана
+class MockScreen(pygame.Surface):
+    def __init__(self, width, height):
+        super().__init__((width, height))
+        self.fill_calls = []
+        self.blit_calls = []
+
+    def fill(self, color):
+        self.fill_calls.append(color)
+        super().fill(color)
+
+    def blit(self, source, dest):
+        self.blit_calls.append((source, dest))
+        super().blit(source, dest)
+
+    def get_fill_calls(self):
+        return self.fill_calls
+
+    def get_blit_calls(self):
+        return self.blit_calls
+
+class TestDrawScene(unittest.TestCase):
+    def setUp(self):
+        # Инициализация Pygame
+        pygame.init()
+        
+        # Создание экрана и необходимых объектов
+        self.screen = MockScreen(800, 600)
+        self.font = pygame.font.SysFont(None, 36)
+        self.walls = [pygame.sprite.Sprite() for _ in range(5)]
+        for wall in self.walls:
+            wall.rect = pygame.Rect(0, 0, 16, 16)
+        
+        self.coins = [Coin((50, 50)), Coin((100, 100), negative=True)]
+        
+        self.player = Character()
+        self.player.rect.topleft = (32, 32)
+        
+        self.end_rect = pygame.Rect(700, 500, 16, 16)
+        
+        self.coin_count = 5
+        self.elapsed_time = 10.5
+        self.screen_width = 800
+    
+    def tearDown(self):
+        pygame.quit()
+
+    # def test_draw_scene(self):
+    #     with patch('pygame.draw.rect') as mock_draw_rect, \
+    #          patch('pygame.draw.ellipse') as mock_draw_ellipse, \
+    #          patch('pygame.display.flip') as mock_display_flip:
+
+    #         # Вызов функции отрисовки
+    #         draw_scene(self.screen, self.walls, self.coins, self.player, self.end_rect, self.coin_count, self.elapsed_time, self.screen_width)
+        
+    #         # Проверка вызовов функций Pygame
+    #         self.assertEqual(self.screen.get_fill_calls(), [(0, 0, 0)])
+    #         self.assertEqual(mock_draw_rect.call_count, len(self.walls) + 2)  # Стены + игрок и конечная позиция
+    #         self.assertEqual(mock_draw_ellipse.call_count, len(self.coins))
+        
+    #         coin_text = self.font.render(f"Монеты: {self.coin_count}", True, (255, 255, 255))
+    #         timer_text = self.font.render(f"Время: {self.elapsed_time:.2f} с", True, (255, 255, 255))
+
+    #         self.assertIn((coin_text, (10, 10)), self.screen.get_blit_calls())
+    #         self.assertIn((timer_text, (self.screen_width - timer_text.get_width() - 10, 10)), self.screen.get_blit_calls())
+        
+    #         mock_display_flip.assert_called_once()
 
 
 
