@@ -170,7 +170,7 @@ def generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offs
 
     return maze, player_start, end_rect, walls, coins
 
-def handle_events():
+def handle_events(screen, font, screen_width, screen_height):
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             pygame.quit()
@@ -190,7 +190,6 @@ def move_player(player, walls, key_state=None):
         player.move(0, -2, walls)
     if key_state[pygame.K_DOWN]:
         player.move(0, 2, walls)
-
 
 def check_coin_collection(player, coins, coin_count):
     for coin in coins[:]:
@@ -221,7 +220,7 @@ def check_game_end(player, end_rect, coin_count, start_time, screen, font, scree
         pygame.quit()
         sys.exit()
 
-def draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width):
+def draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width, font):
     screen.fill((0, 0, 0))
     for wall in walls:
         pygame.draw.rect(screen, (255, 255, 255), wall.rect)
@@ -240,7 +239,7 @@ def draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time,
 
     pygame.display.flip()
 
-if __name__ == "__main__":
+def main():
     screen, clock, walls, player, coins, screen_width, screen_height, maze_offset_x, maze_offset_y = initialize_game()
     maze_width, maze_height = 40, 30
     maze, player_start, end_rect, walls, coins = generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y, player)
@@ -259,12 +258,15 @@ if __name__ == "__main__":
     start_time = time.time()
     while running:
         clock.tick(60)
-        handle_events()
+        handle_events(screen, font, screen_width, screen_height)
         move_player(player, walls)
         coin_count = check_coin_collection(player, coins, coin_count)
         check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height, max_time)
         
         elapsed_time = time.time() - start_time
-        draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width)
+        draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width, font)
 
     pygame.quit()
+
+if __name__ == "__main__":
+    main()
