@@ -262,7 +262,7 @@ if __name__ == "__main__":
         handle_events()
         move_player(player, walls)
         coin_count = check_coin_collection(player, coins, coin_count)
-        check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height)
+        check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height, max_time)
         
         elapsed_time = time.time() - start_time
         draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width)

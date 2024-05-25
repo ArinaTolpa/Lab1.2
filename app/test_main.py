@@ -2,7 +2,7 @@ import unittest
 import pygame
 from main import (
     Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game,
-    generate_maze_and_elements, check_coin_collection, check_game_end, handle_events, move_player
+    generate_maze_and_elements, check_coin_collection, check_game_end, handle_events, move_player, draw_scene
 
 )
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
@@ -574,6 +574,9 @@ class TestMovePlayer(unittest.TestCase):
     #     self.key_state[pygame.K_DOWN] = True
     #     move_player(self.player, self.walls, self.key_state)
     #     self.assertEqual(self.player.rect.bottom, 50)  # The player should not pass the wall
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
 if __name__ == '__main__':
