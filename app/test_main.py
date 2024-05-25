@@ -11,8 +11,7 @@ from unittest.mock import patch, MagicMock
 import time
 import main
 from pygame.locals import *
-import sys 
-from io import StringIO
+
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -611,46 +610,6 @@ class TestHandleEvents(unittest.TestCase):
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-class TestHandleEvents(unittest.TestCase):
-
-    def setUp(self):
-        # Инициализация Pygame
-        pygame.init()
-        
-        # Создание экрана
-        self.screen = pygame.display.set_mode((740, 580))
-        pygame.display.set_caption("Достигните красного квадрата!")
-        
-        # Создание шрифта
-        self.font = pygame.font.SysFont(None, 36)
-        self.screen_width, self.screen_height = 740, 580
-
-    def tearDown(self):
-        pygame.quit()
-
-    def test_handle_quit_event(self):
-        # Эмуляция события QUIT
-        quit_event = pygame.event.Event(pygame.QUIT)
-        pygame.event.post(quit_event)
-        
-        with self.assertRaises(SystemExit):
-            handle_events(self.screen, self.font, self.screen_width, self.screen_height)
-
-    def test_no_event(self):
-        # Очистка очереди событий
-        pygame.event.clear()
-        
-        # Вызов handle_events без событий
-        handle_events(self.screen, self.font, self.screen_width, self.screen_height)  # Должен пройти без ошибок
-
-    def test_handle_other_key_event(self):
-        # Эмуляция другого события KEYDOWN (не ESC)
-        key_event = pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_a})
-        pygame.event.post(key_event)
-        
-        # Вызов handle_events без вызова ConfirmExit
-        handle_events(self.screen, self.font, self.screen_width, self.screen_height)  # Должен пройти без ошибок
-
 
 
 if __name__ == '__main__':
