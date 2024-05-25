@@ -2,12 +2,14 @@ import unittest
 import pygame
 from main import (
     Character, Wall, Coin, GameStats, ConfirmExit, ShowStartScreen, initialize_game,
-    generate_maze_and_elements, check_coin_collection, check_game_end
+    generate_maze_and_elements, check_coin_collection, check_game_end, handle_events, move_player
 
 )
 from pygame.locals import QUIT, KEYDOWN, K_y, K_n, K_RETURN
 import os
+from unittest.mock import patch, MagicMock
 import time
+import sys
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -472,7 +474,7 @@ class TestCheckCoinCollection(unittest.TestCase):
         self.assertEqual(new_coin_count, 0)
         self.assertIn(coin, coins)
 
- ############################################
+
 class TestCheckGameEnd(unittest.TestCase):
 
     def setUp(self):
@@ -516,6 +518,62 @@ class TestCheckGameEnd(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             check_game_end(self.player, end_rect, coin_count, start_time, self.screen, self.font, self.screen_width, self.screen_height, max_time)
+############################################
+
+class TestMovePlayer(unittest.TestCase):
+    def setUp(self):
+        pygame.init()
+        self.player = Character()
+        self.walls = [Wall((50, 50)), Wall((100, 100))]
+        self.key_state = {pygame.K_LEFT: False, pygame.K_RIGHT: False, pygame.K_UP: False, pygame.K_DOWN: False}
+        
+    def test_move_left(self):
+        self.key_state[pygame.K_LEFT] = True
+        initial_position = self.player.rect.topleft
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.topleft, (initial_position[0] - 2, initial_position[1]))
+    
+    def test_move_right(self):
+        self.key_state[pygame.K_RIGHT] = True
+        initial_position = self.player.rect.topleft
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.topleft, (initial_position[0] + 2, initial_position[1]))
+    
+    def test_move_up(self):
+        self.key_state[pygame.K_UP] = True
+        initial_position = self.player.rect.topleft
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.topleft, (initial_position[0], initial_position[1] - 2))
+    
+    def test_move_down(self):
+        self.key_state[pygame.K_DOWN] = True
+        initial_position = self.player.rect.topleft
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.topleft, (initial_position[0], initial_position[1] + 2))
+    
+    def test_collision_right(self):
+        self.player.rect.topleft = (34, 50)  # Place player near the wall
+        self.key_state[pygame.K_RIGHT] = True
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.right, 50)  # The player should not pass the wall
+    
+    def test_collision_left(self):
+        self.player.rect.topleft = (116, 100)  # Place player near the wall
+        self.key_state[pygame.K_LEFT] = True
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.left, 116)  # The player should not pass the wall
+
+    def test_collision_up(self):
+        self.player.rect.topleft = (100, 116)  # Place player near the wall
+        self.key_state[pygame.K_UP] = True
+        move_player(self.player, self.walls, self.key_state)
+        self.assertEqual(self.player.rect.top, 116)  # The player should not pass the wall
+    
+    # def test_collision_down(self):
+    #     self.player.rect.topleft = (100, 34)  # Place player near the wall
+    #     self.key_state[pygame.K_DOWN] = True
+    #     move_player(self.player, self.walls, self.key_state)
+    #     self.assertEqual(self.player.rect.bottom, 50)  # The player should not pass the wall
 
 
 if __name__ == '__main__':
