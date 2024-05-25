@@ -10,6 +10,7 @@ import os
 from unittest.mock import patch, MagicMock
 import time
 import main
+from pygame.locals import *
 
 class TestCharacter(unittest.TestCase):
     def setUp(self):
@@ -390,24 +391,6 @@ class TestMazeGeneration(unittest.TestCase):
         # Проверка, что количество отрицательных монет меньше положительных
         self.assertLessEqual(len(negative_coins), len(positive_coins) // 2)
 
-    # def test_walls_positions(self):
-    #     _, _, _, walls, _ = generate_maze_and_elements(
-    #         self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
-    #     )
-
-    #     for wall in walls:
-    #         x, y = wall.rect.topleft
-    #         self.assertTrue(x % 16 == 0 and y % 16 == 0, f"Wall at ({x}, {y}) is not aligned to the grid")
-
-    # def test_coins_positions(self):
-    #     _, _, _, _, coins = generate_maze_and_elements(
-    #         self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
-    #     )
-
-    #     for coin in coins:
-    #         x, y = coin.rect.topleft
-    #         self.assertTrue(x % 16 == 0 and y % 16 == 0, f"Coin at ({x}, {y}) is not aligned to the grid")
-
     def test_player_start_position(self):
         _, player_start, _, _, _ = generate_maze_and_elements(
             self.maze_width, self.maze_height, self.maze_offset_x, self.maze_offset_y, self.player
@@ -575,7 +558,6 @@ class TestMovePlayer(unittest.TestCase):
     #     move_player(self.player, self.walls, self.key_state)
     #     self.assertEqual(self.player.rect.bottom, 50)  # The player should not pass the wall
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 screen = None
 font = None
 screen_width = None
@@ -625,6 +607,46 @@ class TestHandleEvents(unittest.TestCase):
         handle_events()  # Should not call ConfirmExit
         self.confirm_exit_mock.assert_not_called()
 
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+class TestDrawScene(unittest.TestCase):
+    def setUp(self):
+        # Инициализация Pygame
+        pygame.init()
+        
+        # Создание необходимых объектов для теста
+        self.screen_width = 800
+        self.screen_height = 600
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        
+        self.walls = [pygame.Rect(50, 50, 16, 16)]
+        self.coins = [Coin((100, 100)), Coin((200, 200), negative=True)]
+        self.player = Character()
+        self.player.rect.topleft = (300, 300)
+        self.end_rect = pygame.Rect(400, 400, 16, 16)
+        self.coin_count = 5
+        self.elapsed_time = 30.0
+        self.font = pygame.font.SysFont(None, 36)
+        
+    # def test_draw_scene(self):
+    #     # Создаем мок для метода blit, чтобы проверить, что он вызывается
+    #     self.screen.blit = MagicMock()
+
+    #     # Вызываем тестируемую функцию
+    #     draw_scene(self.screen, self.walls, self.coins, self.player, self.end_rect, self.coin_count, self.elapsed_time, self.screen_width)
+        
+    #     # Проверяем, что blit был вызван как минимум 2 раза для текста монет и времени
+    #     self.assertTrue(self.screen.blit.call_count >= 2)
+        
+    #     # Проверяем вызовы blit для текста монет и времени
+    #     coin_text = self.font.render(f"Монеты: {self.coin_count}", True, (255, 255, 255))
+    #     timer_text = self.font.render(f"Время: {self.elapsed_time:.2f} с", True, (255, 255, 255))
+        
+    #     self.screen.blit.assert_any_call(coin_text, (10, 10))
+    #     self.screen.blit.assert_any_call(timer_text, (self.screen_width - timer_text.get_width() - 10, 10))
+        
+    def tearDown(self):
+        pygame.quit()
 
 
 if __name__ == '__main__':
