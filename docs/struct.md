@@ -120,49 +120,168 @@ classDiagram
 
 
 ## Диаграмма объектов
-![Диаграмма структурных моделей](https://www.planttext.com/api/plantuml/png/RL9BRaCX3Dnp2k-R9wKvG1IfYsowgDHSW82JKF6fm2-AL7LLzO2vKGqXGAkoG69iZyTZDebafDbP8SB-3HN1LZg43m5y7i1uGqPQK254RRmah84ZUepyr63nZBQYP1n6U5mj8Q4ANYVnsNYVSzxsLXPYwr3AxtIC3nLF9ncb8kp9gY7l8R6ouE7wlO3hLurh4xamm-40BfpHeQU1SLVq3Mp-Y8c7R79lWTq9mScBSRCh8y7qQwQ1C9lrIf9I8_MpstCFxg-2yOblQpaJTOtVUMlU1AjbZWoSBrn7NMHpFcLIOcbgZf7dQXxyaoaFsQJH0L7sEathFuleUBExGyMl_cpJYhwQZ1V5t6A3NlDN-W40)
+```mermaid
+classDiagram
+    class Character {
+        +pygame.Surface image
+        +pygame.Rect rect
+        +__init__()
+        +move(dx, dy, walls)
+        Атрибуты:
+        - размер: 16x16 пикселей
+        - цвет: оранжевый
+        - начальная позиция: (32, 32)
+    }
+    
+    class Coin {
+        +pygame.Rect rect
+        +boolean negative
+        +__init__(pos, negative=False)
+        Атрибуты:
+        - размер: 10x10 пикселей
+        Свойства:
+        - Положительная монета: увеличивает счетчик монет на 1
+        - Отрицательная монета: уменьшает счетчик монет на 1 (минимум 0)
+    }
 
-### Описание 
-## Описание UML диаграммы игры (на русском)
+    class Wall {
+        +pygame.Surface image
+        +pygame.Rect rect
+        +__init__(position)
+        Атрибуты:
+        - размер: 16x16 пикселей
+        - цвет: синий
+    }
 
-### Объекты и их атрибуты:
+    class Timer {
+        +int max_time = 120
+        +int current_time = 0
+        +start_timer()
+        +increment_time()
+        +check_time()
+        Поведение:
+        - Начинает отсчет от 0 до 120 секунд с шагом 1 секунда после запуска игры
+    }
 
-* Game (Игра):
-    * Initial coordinate (Изначальная координата): Стартовая позиция персонажа на уровне.
-    * Generated level (Сгенерированный уровень): Объект, хранящий информацию о структуре уровня, включая расположение стен, монет, препятствий и т.д.
-    * Timer 120 seconds (Таймер 120 секунд): Отслеживает оставшееся время игры.
-* LevelGenerator (Генератор уровня):
-    * Level generator (Генератор уровня): Функциональность, отвечающая за создание игрового уровня.
-* Character (Персонаж):
-    * Character position х, у (Позиция персонажа): Текущие координаты (x, y) персонажа на уровне.
-    * Direction of movement (Направление движения): Указывает направление, в котором движется персонаж.
-* Timer (Таймер):
-    * Changes in seconds (Изменяется в секундах): Оставшееся время игры, уменьшается каждую секунду.
-    * The maximum time - 120 seconds (Максимальное время - 120 секунд): Начальное значение таймера.
-* GameStats (Статистика игры):
-    * Number of coins collected (Количество собранных монет): Отслеживает количество монет, собранных игроком.
-    * Maximum number - 20 (Максимальное количество - 20): Общее количество монет на уровне.
-* Point (Точка):
-    * Coordinates of the current position (Координаты текущего положения): Координаты (x, y) текущей позиции персонажа.
-    * Coordinates after movement (Координаты, куда будет передвижение): Координаты (x, y) целевой позиции после движения.
+    class GameStats {
+        +GameStats(screen, font, message, coin_count, screen_width, screen_height)
+    }
 
-### Взаимодействия:
+    class initialize_game {
+        +initialize_game()
+        Атрибуты:
+        - Размер экрана: 740x580
+        - Смещение лабиринта: maze_offset_x = 0, maze_offset_y = 50
+    }
 
-* Game использует LevelGenerator для создания уровня.
-* Game управляет Character, изменяя его позицию и направление движения.
-* Game использует Timer для отслеживания времени игры.
-* Game использует GameStats для хранения статистики игры.
-* Character использует Point для определения своего текущего положения и целевой позиции при движении.
-
-### Особенности диаграммы:
-
-* Диаграмма отражает основные объекты игры и их атрибуты. 
-* Показаны зависимости между объектами (например, Game использует LevelGenerator, Character использует Point).
-* Не показаны методы объектов, что ограничивает полноту описания.
+    class generate_maze_and_elements {
+        +generate_maze_and_elements(maze_width, maze_height, maze_offset_x, maze_offset_y, player)
+        Атрибуты:
+        - Размер лабиринта: maze_width = 40, maze_height = 30
+    }
 
 
-### Дополнительные возможности:
+    class move_player {
+        +move_player(player, walls, key_state=None)
+    }
 
-* Добавить классы для представления других элементов игры, таких как монеты, препятствия и т.д.
-* Указать методы объектов, которые определяют их поведение.
-* Использовать другие типы UML диаграмм, например, диаграммы классов или диаграммы последовательности, для более детального описания структуры и поведения игры.
+    class check_coin_collection {
+        +check_coin_collection(player, coins, coin_count)
+        Свойства:
+        - Положительная монета: coin_count + 1
+        - Отрицательная монета: coin_count - 1
+        - Максимум: coin_count = 20
+    }
+
+    class check_game_end {
+        +check_game_end(player, end_rect, coin_count, start_time, screen, font, screen_width, screen_height, max_time)
+        Условия:
+        - Условие победы: coin_count >= 20
+        - Условие поражения: истекло max_time или игрок достиг конца лабиринта
+    }
+
+    class draw_scene {
+        +draw_scene(screen, walls, coins, player, end_rect, coin_count, elapsed_time, screen_width)
+    }
+
+    initialize_game --> Character : создает
+    initialize_game --> Wall : создает
+    initialize_game --> Coin : создает
+    initialize_game --> generate_maze_and_elements : вызывает
+    generate_maze_and_elements --> Character : инициализация
+    generate_maze_and_elements --> Wall : инициализация
+    generate_maze_and_elements --> Coin : инициализация
+    move_player --> Character : вызывает
+    check_coin_collection --> Coin : обновляет
+    check_game_end --> GameStats : обновляет
+    draw_scene --> Character : рисует
+    draw_scene --> Wall : рисует
+    draw_scene --> Coin : рисует
+    Timer --> check_game_end : взаимодействие
+```
+
+## Описание 
+
+### Character 
+- Атрибуты:
+`image`: поверхность изображения персонажа размером 16x16 пикселей, оранжевого цвета
+`rect`: прямоугольник, описывающий позицию и размер персонажа
+Начальная позиция: (32, 32)
+- Методы:
+`__init__()`: инициализация персонажа
+`move(dx, dy, walls)`: перемещение персонажа с учетом столкновений со стенами
+
+### Coin
+- Атрибуты:
+`rect`: прямоугольник, описывающий позицию и размер монеты 10x10 пикселей
+`negative`: булево значение, указывающее, является ли монета отрицательной
+- Методы:
+`__init__(pos, negative=False)`: инициализация монеты
+- Свойства:
+Положительная монета: увеличивает счетчик монет на 1
+Отрицательная монета: уменьшает счетчик монет на 1 (минимум 0)
+
+### Wall 
+- Атрибуты:
+`image`: поверхность изображения стены размером 16x16 пикселей, синего цвета
+`rect`: прямоугольник, описывающий позицию и размер стены
+- Методы:
+`__init__(position)`: инициализация стены на заданной позиции
+
+### Timer (Таймер)
+- Атрибуты:
+`max_time` = 120: максимальное время в секундах
+`current_time` = 0: текущее время в секундах
+- Методы:
+`start_timer()`: запуск таймера
+`increment_time()`: увеличение времени на 1 секунду
+`check_time()`: проверка текущего времени относительно max_time
+- Поведение:
+Начинает отсчет от 0 до 120 секунд с шагом 1 секунда после запуска игры
+Основной игровой цикл:
+
+### Инициализация игры:
+`initialize_game()`: инициализация экрана и основных объектов
+Размер экрана: 740x580
+Смещение лабиринта: maze_offset_x = 0, maze_offset_y = 50
+`generate_maze_and_elements()`: генерация лабиринта, стен и монет
+Размер лабиринта: maze_width = 40, maze_height = 30
+`ShowStartScreen()`: показ стартового экрана
+
+### Игровой процесс:
+`handle_events()`: обработка событий (выход, пауза)
+`move_player()`: перемещение игрока
+`check_coin_collection()`: проверка сбора монет
+Положительная монета: coin_count + 1
+Отрицательная монета: coin_count - 1
+Максимум: coin_count = 20
+`check_game_end()`: проверка условий окончания игры
+Условие победы: coin_count >= 20
+Условие поражения: истекло max_time или игрок достиг конца лабиринта
+`draw_scene()`: отрисовка текущего состояния игры
+
+### Счетчик монет:
+Начальное значение: 0
+Положительные монеты: +1 к счетчику
+Отрицательные монеты: -1 к счетчику (минимум 0)
+Максимальное значение: 20
