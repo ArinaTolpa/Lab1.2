@@ -1,0 +1,4 @@
+pygame
+unittest
+tox
+coverage
