@@ -1,7 +1,7 @@
 [![Python application](https://github.com/ArinaTolpa/Lab1.2/actions/workflows/connect.yml/badge.svg)](https://github.com/ArinaTolpa/Lab1.2/actions/workflows/connect.yml)
 [![Coverage Status](https://coveralls.io/repos/github/ArinaTolpa/Lab1.2/badge.svg?branch=master)](https://coveralls.io/github/ArinaTolpa/Lab1.2?branch=master)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ArinaTolpa_Lab1.2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ArinaTolpa_Lab1.2)
-
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ArinaTolpa_Lab1.2&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ArinaTolpa_Lab1.2)
 
 Описание приложения
 	•	Игра “Человечек в лабиринте”
